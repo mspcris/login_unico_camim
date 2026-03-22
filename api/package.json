@@ -1,0 +1,20 @@
+{
+  "name": "login-unico-camim",
+  "version": "1.0.0",
+  "description": "Login Único Camim - OAuth2/OIDC Provider",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "ioredis": "^5.3.2",
+    "oidc-provider": "^7.14.3",
+    "pg": "^8.11.5",
+    "uuid": "^9.0.0"
+  }
+}

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Autorizar Acesso &mdash; Camim</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="card">
+
+      <!-- Logo -->
+      <div class="logo" aria-label="Camim">
+        <svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <text x="0" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="30" font-weight="700" fill="#1a56db">Camim</text>
+        </svg>
+      </div>
+
+      <!-- Title -->
+      <h1 class="consent-title">
+        <% if (client && client.client_name) { %>
+          <strong><%= client.client_name %></strong> quer acessar sua conta
+        <% } else { %>
+          Uma aplicação quer acessar sua conta
+        <% } %>
+      </h1>
+
+      <p class="consent-subtitle">Esta aplicação terá acesso às seguintes informações:</p>
+
+      <!-- Permissions List -->
+      <ul class="permissions-list" aria-label="Permissões solicitadas">
+        <%
+          const scopeLabels = {
+            openid:         { label: 'Identificação básica',          desc: 'Seu ID único no sistema Camim' },
+            profile:        { label: 'Perfil',                        desc: 'Nome e foto de perfil' },
+            email:          { label: 'Endereço de e-mail',            desc: 'Seu e-mail cadastrado' },
+            phone:          { label: 'Número de telefone',            desc: 'Seu telefone cadastrado' },
+            offline_access: { label: 'Acesso offline',                desc: 'Manter sua sessão ativa em segundo plano' },
+          };
+        %>
+        <% for (const scope of scopes) { %>
+          <% if (scope !== 'openid' || scopes.length === 1) { %>
+            <%
+              const info = scopeLabels[scope] || { label: scope, desc: '' };
+            %>
+            <li class="permission-item">
+              <span class="permission-icon" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              </span>
+              <div class="permission-text">
+                <strong><%= info.label %></strong>
+                <% if (info.desc) { %>
+                  <span class="permission-desc"><%= info.desc %></span>
+                <% } %>
+              </div>
+            </li>
+          <% } %>
+        <% } %>
+
+        <!-- openid is always included, show it once -->
+        <% if (scopes.length > 1 && scopes.includes('openid')) { %>
+          <li class="permission-item">
+            <span class="permission-icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+            </span>
+            <div class="permission-text">
+              <strong>Identificação básica</strong>
+              <span class="permission-desc">Seu ID único no sistema Camim</span>
+            </div>
+          </li>
+        <% } %>
+      </ul>
+
+      <!-- Action Buttons -->
+      <div class="consent-actions">
+
+        <form action="/interaction/<%= uid %>/confirm" method="POST" style="display:inline">
+          <button type="submit" class="btn-primary">
+            Permitir Acesso
+          </button>
+        </form>
+
+        <form action="/interaction/<%= uid %>/abort" method="POST" style="display:inline">
+          <button type="submit" class="btn-secondary">
+            Cancelar
+          </button>
+        </form>
+
+      </div>
+
+      <p class="consent-note">
+        Você pode revogar este acesso a qualquer momento nas configurações da sua conta.
+      </p>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="page-footer">
+      <p>Login Único Camim &mdash; Acesso seguro e centralizado</p>
+    </footer>
+  </div>
+</body>
+</html>

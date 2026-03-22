@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Erro &mdash; Camim</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="card card--error">
+
+      <!-- Error Icon -->
+      <div class="error-icon" aria-hidden="true">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="28" cy="28" r="28" fill="#fdf2f2"/>
+          <path d="M28 16a12 12 0 100 24 12 12 0 000-24zm0 6.4a1.2 1.2 0 011.2 1.2v4.8a1.2 1.2 0 11-2.4 0v-4.8a1.2 1.2 0 011.2-1.2zm0 9.6a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" fill="#e02424"/>
+        </svg>
+      </div>
+
+      <!-- Heading -->
+      <h1 class="error-title">Ocorreu um erro</h1>
+
+      <!-- Error Details -->
+      <% if (error && error.error) { %>
+        <div class="error-code">
+          <code><%= error.error %></code>
+        </div>
+      <% } %>
+
+      <% if (error && error.error_description) { %>
+        <p class="error-description"><%= error.error_description %></p>
+      <% } else { %>
+        <p class="error-description">
+          Não foi possível completar a operação. Por favor, tente novamente.
+        </p>
+      <% } %>
+
+      <!-- Actions -->
+      <div class="error-actions">
+        <button
+          type="button"
+          class="btn-secondary"
+          onclick="window.history.back()"
+        >
+          &larr; Voltar
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="page-footer">
+      <p>Login Único Camim &mdash; Acesso seguro e centralizado</p>
+    </footer>
+  </div>
+</body>
+</html>
