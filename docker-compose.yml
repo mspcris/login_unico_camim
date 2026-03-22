@@ -40,6 +40,8 @@ services:
       dockerfile: Dockerfile
     container_name: camim_auth_api
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:3000"
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: 3000
@@ -55,21 +57,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    networks:
-      - camim_network
-
-  nginx:
-    image: nginx:alpine
-    container_name: camim_auth_nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - api
     networks:
       - camim_network
 
