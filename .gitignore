@@ -4,3 +4,4 @@ node_modules/
 nginx/ssl/*.pem
 nginx/ssl/*.key
 nginx/ssl/*.crt
+deploy.sh

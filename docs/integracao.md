@@ -797,7 +797,7 @@ Não necessariamente. No primeiro login, use o `sub` retornado pelo `/me` para c
 Um UUID único e imutável por usuário. Use-o como chave estrangeira no seu banco de dados. Exemplo: `52664cd8-6976-4c76-ae81-a7c2ae9adee5`.
 
 **Posso confiar no e-mail retornado?**
-Sim — `email_verified: true` indica que o e-mail foi verificado pelo Camim. Mas use o `sub` como identificador principal, pois e-mails podem mudar.
+Sim — `email_verified: true` indica que o e-mail foi verificado pela Camim. Mas use o `sub` como identificador principal, pois e-mails podem mudar.
 
 **Por que a troca de código deve ser feita no backend?**
 Porque exige o `client_secret`. Se feita no frontend (JavaScript no navegador), o secret ficaria exposto a qualquer pessoa. Nunca envie o `client_secret` ao navegador.
