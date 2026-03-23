@@ -20,6 +20,14 @@ router.get('/', (req, res) => {
 });
 
 /**
+ * GET /docs
+ * Developer integration guide.
+ */
+router.get('/docs', (req, res) => {
+  res.render('docs');
+});
+
+/**
  * POST /registrar
  * Self-registration: user enters email, receives activation link.
  */

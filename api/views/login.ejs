@@ -1,92 +1,315 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="robots" content="noindex, nofollow" />
-  <title>Entrar com Camim</title>
-  <link rel="stylesheet" href="/css/style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Entrar com IDCamim</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; font-family: "Segoe UI", system-ui, sans-serif; }
+
+/* ══ FUNDO — mosaico de fotos das clínicas ══ */
+.bg {
+  position: fixed; inset: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  z-index: 0;
+}
+.bg-cell {
+  background-size: cover;
+  background-position: center;
+  animation: kenburns 20s ease-in-out infinite alternate;
+  filter: brightness(.55) saturate(1.1);
+}
+.bg-cell:nth-child(1)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2021/06/15145129/home.jpg'); animation-delay: 0s; }
+.bg-cell:nth-child(2)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/04/30163026/Campo-Grande-e1562878167161.jpg'); animation-delay: -3s; }
+.bg-cell:nth-child(3)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2022/03/09151823/cg2fachada-scaled.jpg'); animation-delay: -6s; }
+.bg-cell:nth-child(4)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/07/11123612/BANGU-1-as-Smart-Object-1-copy.jpg'); animation-delay: -9s; }
+.bg-cell:nth-child(5)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2020/10/19144653/del_castilho.jpg'); animation-delay: -2s; }
+.bg-cell:nth-child(6)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/04/30162346/jpa-e1562878253339.jpg'); animation-delay: -5s; }
+.bg-cell:nth-child(7)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2020/10/19144328/Recepcao-Del-Castilho.jpg'); animation-delay: -8s; }
+.bg-cell:nth-child(8)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2024/04/05115830/madureira.jpg'); animation-delay: -11s; }
+.bg-cell:nth-child(9)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2022/03/09152145/cpnhofachada.jpg'); animation-delay: -4s; }
+.bg-cell:nth-child(10) { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2020/02/21140942/nillopolis2102.jpg'); animation-delay: -7s; }
+.bg-cell:nth-child(11) { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/07/11130213/REALENGO-1-as-Smart-Object-1-copy.jpg'); animation-delay: -1s; }
+.bg-cell:nth-child(12) { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/04/30162920/NI-e1562878495907.jpg'); animation-delay: -10s; }
+@keyframes kenburns {
+  0%   { transform: scale(1)    translate(0, 0); }
+  100% { transform: scale(1.12) translate(-2%, -2%); }
+}
+.bg-overlay {
+  position: fixed; inset: 0; z-index: 1;
+  background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(0,20,10,.45) 0%, rgba(0,10,5,.82) 100%);
+}
+.bg-grid {
+  position: fixed; inset: 0; z-index: 2;
+  background-image:
+    linear-gradient(rgba(0,180,80,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,180,80,.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  animation: gridpulse 6s ease-in-out infinite;
+}
+@keyframes gridpulse { 0%, 100% { opacity: .6; } 50% { opacity: 1; } }
+.scanline {
+  position: fixed; left: 0; right: 0; height: 2px; z-index: 3;
+  background: linear-gradient(90deg, transparent, rgba(0,220,100,.4), transparent);
+  animation: scan 8s linear infinite;
+}
+@keyframes scan {
+  0%   { top: -2px; opacity: 0; }
+  5%   { opacity: 1; }
+  95%  { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* ══ CONTEÚDO ══ */
+.stage {
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px;
+}
+.top-brand {
+  text-align: center; margin-bottom: 32px;
+  animation: fadeDown .8s ease both;
+}
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.logo-wrap {
+  position: relative; display: inline-block; margin-bottom: 16px;
+}
+.logo-wrap img {
+  height: 80px; width: auto;
+  filter: drop-shadow(0 0 24px rgba(0,220,100,.5));
+  animation: logopulse 3s ease-in-out infinite;
+}
+@keyframes logopulse {
+  0%, 100% { filter: drop-shadow(0 0 18px rgba(0,220,100,.4)); }
+  50%       { filter: drop-shadow(0 0 36px rgba(0,220,100,.75)); }
+}
+.ring {
+  position: absolute; top: 50%; left: 50%;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0,200,80,.3);
+  transform: translate(-50%, -50%) scale(0);
+  animation: ringout 3s ease-out infinite;
+  width: 80px; height: 80px;
+}
+.ring:nth-child(2) { animation-delay: 1s; }
+.ring:nth-child(3) { animation-delay: 2s; }
+@keyframes ringout {
+  0%   { transform: translate(-50%,-50%) scale(.6); opacity: .8; }
+  100% { transform: translate(-50%,-50%) scale(2.4); opacity: 0; }
+}
+.brand-name {
+  font-size: 2.4rem; font-weight: 900; color: #fff;
+  letter-spacing: .06em; text-shadow: 0 0 40px rgba(0,200,80,.4);
+}
+.brand-slogan {
+  font-size: .95rem; color: rgba(255,255,255,.55);
+  letter-spacing: .12em; text-transform: uppercase; margin-top: 4px;
+}
+
+/* ── CARD ── */
+.card {
+  width: min(400px, 100%);
+  background: rgba(5, 20, 10, .72);
+  border: 1px solid rgba(0,200,80,.2);
+  border-radius: 20px;
+  padding: 36px 40px;
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  box-shadow: 0 0 0 1px rgba(0,200,80,.08), 0 8px 40px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06);
+  animation: fadeUp .9s ease .2s both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.card-title { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.card-sub   { font-size: .82rem; color: rgba(255,255,255,.35); margin-bottom: 20px; }
+.card-sub strong { color: rgba(0,220,100,.8); font-weight: 700; }
+
+.alert-error {
+  font-size: .83rem; padding: 9px 13px; border-radius: 8px;
+  margin-bottom: 14px; text-align: center;
+  background: rgba(220,50,50,.15); border: 1px solid rgba(220,80,80,.3); color: #ff8080;
+  display: flex; align-items: center; gap: 8px; justify-content: center;
+}
+
+/* campos */
+.field { margin-bottom: 16px; }
+.field label {
+  display: block; font-size: .72rem; font-weight: 700;
+  color: rgba(0,220,100,.7); text-transform: uppercase;
+  letter-spacing: .1em; margin-bottom: 7px;
+}
+.input-row {
+  display: flex; align-items: center;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px; overflow: hidden;
+  transition: border-color .2s, box-shadow .2s;
+}
+.input-row:focus-within {
+  border-color: rgba(0,200,80,.6);
+  box-shadow: 0 0 0 3px rgba(0,180,70,.15), inset 0 0 20px rgba(0,200,80,.04);
+}
+.input-row .icon {
+  width: 42px; display: flex; align-items: center;
+  justify-content: center; color: rgba(0,200,80,.5);
+  font-size: .9rem; flex-shrink: 0;
+}
+.input-row input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: #fff; font-size: .95rem; padding: 12px 10px 12px 0;
+}
+.input-row input::placeholder { color: rgba(255,255,255,.18); }
+.toggle-pwd {
+  background: none; border: none; cursor: pointer;
+  padding: 0 13px; color: rgba(255,255,255,.25);
+  font-size: .85rem; transition: color .2s;
+}
+.toggle-pwd:hover { color: rgba(0,200,80,.7); }
+
+/* checkbox manter conectado */
+.check-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 18px; margin-top: 2px;
+}
+.check-row input[type="checkbox"] { accent-color: #00cc55; width: 15px; height: 15px; cursor: pointer; }
+.check-row label { font-size: .82rem; color: rgba(255,255,255,.4); cursor: pointer; }
+
+/* botão entrar */
+.btn-login {
+  width: 100%; padding: 13px; border: none; border-radius: 10px;
+  background: linear-gradient(135deg, #00cc55 0%, #006633 100%);
+  color: #fff; font-size: .97rem; font-weight: 800;
+  letter-spacing: .05em; cursor: pointer;
+  position: relative; overflow: hidden;
+  transition: transform .15s, box-shadow .2s;
+  box-shadow: 0 4px 24px rgba(0,180,70,.4);
+}
+.btn-login:hover  { box-shadow: 0 6px 32px rgba(0,200,80,.55); transform: translateY(-1px); }
+.btn-login:active { transform: scale(.98); }
+.btn-login::after {
+  content: ''; position: absolute;
+  top: -50%; left: -75%; width: 50%; height: 200%;
+  background: rgba(255,255,255,.18);
+  transform: skewX(-20deg);
+  animation: btnshine 4s ease-in-out infinite 1.5s;
+}
+@keyframes btnshine {
+  0%, 100% { left: -75%; opacity: 0; }
+  45%       { left: 130%; opacity: 1; }
+}
+
+@media (max-width: 480px) {
+  .bg { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(6, 1fr); }
+  .brand-name { font-size: 1.8rem; }
+  .card { padding: 28px 22px; }
+}
+</style>
 </head>
 <body>
-  <div class="page-wrapper">
-    <div class="card">
 
-      <!-- Logo -->
-      <div class="logo" aria-label="Camim">
-        <svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <text x="0" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="30" font-weight="700" fill="#1a56db">Camim</text>
-        </svg>
+<!-- Fundo -->
+<div class="bg">
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+</div>
+<div class="bg-overlay"></div>
+<div class="bg-grid"></div>
+<div class="scanline"></div>
+
+<div class="stage">
+
+  <!-- Logo + Marca -->
+  <div class="top-brand">
+    <div class="logo-wrap">
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <img src="https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2021/06/15145129/home.jpg"
+           alt="CAMIM"
+           style="height:80px;width:80px;border-radius:50%;object-fit:cover;border:2px solid rgba(0,200,80,.4);">
+    </div>
+    <div class="brand-name">IDCamim</div>
+    <div class="brand-slogan">Login Único Camim</div>
+  </div>
+
+  <!-- Card -->
+  <div class="card">
+    <div class="card-title">Bem-vindo de volta</div>
+    <% if (client && client.client_name) { %>
+      <div class="card-sub">Faça login para acessar <strong><%= client.client_name %></strong></div>
+    <% } else { %>
+      <div class="card-sub">Acesse com sua conta institucional</div>
+    <% } %>
+
+    <% if (error) { %>
+      <div class="alert-error" role="alert">
+        <i class="fas fa-exclamation-circle"></i>
+        <span><%= error %></span>
+      </div>
+    <% } %>
+
+    <form action="/interaction/<%= uid %>/login" method="POST" novalidate>
+
+      <div class="field">
+        <label for="email">E-mail Institucional</label>
+        <div class="input-row">
+          <span class="icon"><i class="far fa-envelope"></i></span>
+          <input id="email" name="email" type="email"
+            placeholder="voce@camim.com.br"
+            autocomplete="email" autofocus required>
+        </div>
       </div>
 
-      <!-- Subtitle -->
-      <% if (client && client.client_name) { %>
-        <p class="subtitle">
-          Fazer login para acessar<br />
-          <strong><%= client.client_name %></strong>
-        </p>
-      <% } else { %>
-        <p class="subtitle">Acesse sua conta Camim</p>
-      <% } %>
-
-      <!-- Error Alert -->
-      <% if (error) { %>
-        <div class="alert-error" role="alert">
-          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" style="flex-shrink:0" aria-hidden="true">
-            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-          </svg>
-          <span><%= error %></span>
-        </div>
-      <% } %>
-
-      <!-- Login Form -->
-      <form action="/interaction/<%= uid %>/login" method="POST" novalidate>
-
-        <div class="form-group">
-          <label for="email">E-mail</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            required
-            placeholder="seu@email.com.br"
-            autocomplete="email"
-            autofocus
-            class="form-input"
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="password">Senha</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            required
+      <div class="field">
+        <label for="password">Senha</label>
+        <div class="input-row">
+          <span class="icon"><i class="fas fa-lock"></i></span>
+          <input id="password" name="password" type="password"
             placeholder="••••••••"
-            autocomplete="current-password"
-            class="form-input"
-          />
+            autocomplete="current-password" required>
+          <button class="toggle-pwd" type="button" id="togglePwd" aria-label="Mostrar/ocultar senha">
+            <i class="far fa-eye" id="eyeIcon"></i>
+          </button>
         </div>
+      </div>
 
-        <div class="form-group form-group--inline">
-          <label class="checkbox-label">
-            <input type="checkbox" name="remember" value="1" />
-            <span>Manter conectado</span>
-          </label>
-        </div>
+      <div class="check-row">
+        <input type="checkbox" id="remember" name="remember" value="1">
+        <label for="remember">Manter conectado</label>
+      </div>
 
-        <button type="submit" class="btn-primary">
-          Entrar
-        </button>
+      <button type="submit" class="btn-login">
+        <i class="fas fa-sign-in-alt" style="margin-right:8px"></i>Entrar
+      </button>
 
-      </form>
-
-    </div>
-
-    <!-- Footer -->
-    <footer class="page-footer">
-      <p>Login Único Camim &mdash; Acesso seguro e centralizado</p>
-    </footer>
+    </form>
   </div>
+
+</div>
+
+<script>
+document.getElementById('togglePwd').addEventListener('click', function () {
+  const inp  = document.getElementById('password');
+  const icon = document.getElementById('eyeIcon');
+  const show = inp.type === 'password';
+  inp.type   = show ? 'text' : 'password';
+  icon.className = show ? 'far fa-eye-slash' : 'far fa-eye';
+});
+</script>
 </body>
 </html>

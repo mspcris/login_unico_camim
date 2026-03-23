@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Documentação de Integração — IDCamim</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<style>
+:root {
+  --green: #00cc55;
+  --green-dark: #006633;
+  --green-dim: rgba(0,200,80,.15);
+  --bg: #0a0f0b;
+  --surface: rgba(8,24,12,.85);
+  --border: rgba(0,200,80,.18);
+  --text: #e8f5ee;
+  --text-dim: rgba(232,245,238,.55);
+  --code-bg: rgba(0,0,0,.5);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; line-height: 1.65; }
+
+/* ── Fundo ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(0,180,80,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,180,80,.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+/* ── Layout ── */
+.wrapper { position: relative; z-index: 1; display: flex; min-height: 100vh; }
+
+/* ── Sidebar ── */
+nav.sidebar {
+  width: 260px; flex-shrink: 0;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  background: rgba(4,14,7,.92);
+  border-right: 1px solid var(--border);
+  padding: 32px 0;
+  backdrop-filter: blur(12px);
+}
+.sidebar-brand {
+  padding: 0 24px 28px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.sidebar-brand a { text-decoration: none; }
+.sidebar-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 1.3rem; font-weight: 900; color: #fff;
+  letter-spacing: .04em;
+}
+.sidebar-logo .dot { color: var(--green); }
+.sidebar-tag {
+  font-size: .68rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .12em; color: var(--green); margin-top: 3px;
+  display: block;
+}
+nav.sidebar ul { list-style: none; padding: 0 12px; }
+nav.sidebar ul li a {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 12px; border-radius: 8px;
+  color: var(--text-dim); text-decoration: none; font-size: .875rem;
+  transition: background .15s, color .15s;
+}
+nav.sidebar ul li a:hover, nav.sidebar ul li a.active {
+  background: var(--green-dim); color: var(--green);
+}
+nav.sidebar ul li a i { width: 16px; text-align: center; font-size: .8rem; }
+.sidebar-section {
+  font-size: .68rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .12em; color: rgba(0,200,80,.4);
+  padding: 16px 24px 6px;
+}
+.sidebar-back {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 24px; margin-top: 20px; border-top: 1px solid var(--border);
+  color: var(--text-dim); font-size: .82rem; text-decoration: none;
+  transition: color .15s;
+}
+.sidebar-back:hover { color: var(--green); }
+
+/* ── Conteúdo ── */
+main { flex: 1; padding: 48px 60px; max-width: 900px; }
+
+.page-header { margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--border); }
+.page-header h1 {
+  font-size: 2rem; font-weight: 900; color: #fff;
+  text-shadow: 0 0 40px rgba(0,200,80,.3);
+  margin-bottom: 10px;
+}
+.page-header p { color: var(--text-dim); font-size: 1rem; max-width: 600px; }
+.badge-oidc {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--green-dim); border: 1px solid var(--border);
+  color: var(--green); font-size: .72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em;
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 16px;
+}
+
+/* seções */
+section { margin-bottom: 56px; }
+section h2 {
+  font-size: 1.25rem; font-weight: 800; color: #fff;
+  border-left: 3px solid var(--green); padding-left: 14px;
+  margin-bottom: 20px;
+}
+section h3 {
+  font-size: 1rem; font-weight: 700; color: rgba(0,220,100,.9);
+  margin: 24px 0 10px;
+}
+section p { color: var(--text-dim); margin-bottom: 12px; font-size: .94rem; }
+section p strong { color: var(--text); }
+
+/* tabelas */
+table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: .875rem; }
+th { background: rgba(0,180,80,.1); color: var(--green); font-weight: 700; text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; }
+td { padding: 10px 14px; border-bottom: 1px solid rgba(0,200,80,.07); color: var(--text-dim); vertical-align: top; }
+td:first-child { color: var(--text); font-family: 'Courier New', monospace; font-size: .82rem; white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+
+/* código */
+pre {
+  background: var(--code-bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px 24px; overflow-x: auto;
+  margin: 14px 0; position: relative;
+}
+pre code { font-family: 'Courier New', Consolas, monospace; font-size: .83rem; color: #a8e6bf; line-height: 1.6; }
+code { font-family: 'Courier New', Consolas, monospace; font-size: .82rem; background: rgba(0,0,0,.4); color: #7dd9a3; padding: 2px 6px; border-radius: 4px; }
+pre code { background: none; padding: 0; }
+
+/* copy button */
+.code-wrap { position: relative; }
+.copy-btn {
+  position: absolute; top: 12px; right: 12px;
+  background: rgba(0,180,80,.15); border: 1px solid var(--border);
+  color: var(--green); font-size: .72rem; font-weight: 700;
+  padding: 4px 10px; border-radius: 6px; cursor: pointer;
+  transition: background .15s;
+}
+.copy-btn:hover { background: rgba(0,180,80,.3); }
+
+/* fluxo */
+.flow {
+  background: var(--code-bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 24px 28px;
+  font-family: 'Courier New', monospace; font-size: .82rem;
+  color: #7dd9a3; line-height: 2;
+}
+
+/* endpoint cards */
+.endpoint-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+.endpoint-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px 18px;
+}
+.endpoint-card .method { font-size: .68rem; font-weight: 700; text-transform: uppercase; color: var(--green); letter-spacing: .1em; margin-bottom: 4px; }
+.endpoint-card .path { font-family: 'Courier New', monospace; font-size: .82rem; color: var(--text); margin-bottom: 6px; }
+.endpoint-card .desc { font-size: .78rem; color: var(--text-dim); }
+
+/* callout */
+.callout {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: rgba(0,180,80,.08); border: 1px solid rgba(0,200,80,.25);
+  border-radius: 10px; padding: 14px 18px; margin: 16px 0; font-size: .88rem;
+}
+.callout i { color: var(--green); margin-top: 2px; flex-shrink: 0; }
+.callout p { color: var(--text-dim); margin: 0; }
+.callout.warn { background: rgba(220,150,0,.08); border-color: rgba(220,170,0,.25); }
+.callout.warn i { color: #f59e0b; }
+
+/* scope pills */
+.scope-pill {
+  display: inline-block; background: rgba(0,180,80,.12);
+  border: 1px solid rgba(0,200,80,.25); color: var(--green);
+  font-size: .72rem; font-weight: 700; padding: 3px 10px;
+  border-radius: 20px; margin: 2px;
+}
+
+/* lang tabs */
+.tabs { display: flex; gap: 8px; margin-bottom: -1px; flex-wrap: wrap; }
+.tab-btn {
+  background: rgba(0,0,0,.3); border: 1px solid var(--border);
+  border-bottom: none; color: var(--text-dim); font-size: .8rem;
+  font-weight: 600; padding: 8px 16px; border-radius: 8px 8px 0 0;
+  cursor: pointer; transition: background .15s, color .15s;
+}
+.tab-btn.active { background: var(--code-bg); color: var(--green); border-color: var(--border); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+@media (max-width: 900px) {
+  .wrapper { flex-direction: column; }
+  nav.sidebar { width: 100%; height: auto; position: relative; }
+  main { padding: 32px 24px; }
+  .endpoint-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<!-- ── SIDEBAR ── -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <a href="/">
+      <div class="sidebar-logo">
+        <i class="fas fa-id-badge" style="color:var(--green)"></i>
+        ID<span class="dot">Camim</span>
+      </div>
+      <span class="sidebar-tag">Documentação · API</span>
+    </a>
+  </div>
+
+  <div class="sidebar-section">Início</div>
+  <ul>
+    <li><a href="#fluxo"><i class="fas fa-route"></i> Como funciona</a></li>
+    <li><a href="#endpoints"><i class="fas fa-plug"></i> Endpoints</a></li>
+    <li><a href="#registro"><i class="fas fa-key"></i> Registrar sistema</a></li>
+  </ul>
+
+  <div class="sidebar-section">Integração</div>
+  <ul>
+    <li><a href="#passo1"><i class="fas fa-external-link-alt"></i> 1. Redirecionar</a></li>
+    <li><a href="#passo2"><i class="fas fa-code"></i> 2. Receber código</a></li>
+    <li><a href="#passo3"><i class="fas fa-exchange-alt"></i> 3. Obter tokens</a></li>
+    <li><a href="#passo4"><i class="fas fa-user"></i> 4. Dados do usuário</a></li>
+    <li><a href="#scopes"><i class="fas fa-list"></i> Scopes</a></li>
+  </ul>
+
+  <div class="sidebar-section">Referência</div>
+  <ul>
+    <li><a href="#exemplos"><i class="fas fa-terminal"></i> Exemplos</a></li>
+    <li><a href="#logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    <li><a href="#refresh"><i class="fas fa-sync"></i> Refresh Token</a></li>
+    <li><a href="#introspect"><i class="fas fa-search"></i> Introspecção</a></li>
+    <li><a href="#faq"><i class="fas fa-question-circle"></i> FAQ</a></li>
+  </ul>
+
+  <a href="/" class="sidebar-back"><i class="fas fa-arrow-left"></i> Voltar ao início</a>
+</nav>
+
+<!-- ── CONTEÚDO ── -->
+<main>
+
+  <div class="page-header">
+    <div class="badge-oidc"><i class="fas fa-shield-alt"></i> OAuth 2.0 · OpenID Connect</div>
+    <h1>Integração com o IDCamim</h1>
+    <p>Guia completo para conectar qualquer sistema ao Login Único Camim. Autentique usuários <code>@camim</code> sem gerenciar senhas próprias.</p>
+  </div>
+
+  <!-- FLUXO -->
+  <section id="fluxo">
+    <h2>Como funciona o fluxo</h2>
+    <p>O IDCamim usa o <strong>Authorization Code Flow</strong> — o mais seguro para aplicações web com backend.</p>
+    <div class="flow">
+1. Usuário clica "Entrar com IDCamim" no seu sistema
+         │
+         ▼
+2. Seu sistema redireciona para → https://auth.camim.com.br/auth
+         │
+         ▼
+3. Usuário digita e-mail e senha na página do Camim
+         │
+         ▼
+4. IDCamim redireciona de volta → https://seusistema.com.br/callback?code=XYZ
+         │
+         ▼
+5. Seu backend troca o código por tokens  (POST /token)
+         │
+         ▼
+6. Seu backend busca os dados do usuário  (GET /me)
+         │
+         ▼
+7. Usuário autenticado ✓
+    </div>
+    <div class="callout">
+      <i class="fas fa-info-circle"></i>
+      <p>A Discovery URL <code>https://auth.camim.com.br/.well-known/openid-configuration</code> contém todos os endpoints e configurações — bibliotecas OIDC se configuram automaticamente com ela.</p>
+    </div>
+  </section>
+
+  <!-- ENDPOINTS -->
+  <section id="endpoints">
+    <h2>Endpoints</h2>
+    <div class="endpoint-grid">
+      <div class="endpoint-card">
+        <div class="method">GET</div>
+        <div class="path">/auth</div>
+        <div class="desc">Inicia o login — redirecione o usuário para cá</div>
+      </div>
+      <div class="endpoint-card">
+        <div class="method">POST</div>
+        <div class="path">/token</div>
+        <div class="desc">Troca o código por access_token e id_token</div>
+      </div>
+      <div class="endpoint-card">
+        <div class="method">GET</div>
+        <div class="path">/me</div>
+        <div class="desc">Retorna os dados do usuário autenticado</div>
+      </div>
+      <div class="endpoint-card">
+        <div class="method">GET</div>
+        <div class="path">/session/end</div>
+        <div class="desc">Encerra a sessão do usuário (logout)</div>
+      </div>
+      <div class="endpoint-card">
+        <div class="method">GET</div>
+        <div class="path">/jwks</div>
+        <div class="desc">Chaves públicas para verificar JWTs (ES256)</div>
+      </div>
+      <div class="endpoint-card">
+        <div class="method">POST</div>
+        <div class="path">/token/introspection</div>
+        <div class="desc">Verifica se um access_token é válido</div>
+      </div>
+      <div class="endpoint-card">
+        <div class="method">POST</div>
+        <div class="path">/token/revocation</div>
+        <div class="desc">Revoga um token antes da expiração</div>
+      </div>
+      <div class="endpoint-card">
+        <div class="method">GET</div>
+        <div class="path">/.well-known/openid-configuration</div>
+        <div class="desc">Discovery — auto-configuração de bibliotecas</div>
+      </div>
+    </div>
+    <div class="callout warn">
+      <i class="fas fa-exclamation-triangle"></i>
+      <p>O endpoint de autorização é <code>/auth</code>, <strong>não</strong> <code>/authorize</code>.</p>
+    </div>
+  </section>
+
+  <!-- REGISTRO -->
+  <section id="registro">
+    <h2>Registrar seu sistema</h2>
+    <p>Antes de integrar, registre seu sistema no painel para obter <code>client_id</code> e <code>client_secret</code>.</p>
+
+    <h3><i class="fas fa-desktop" style="margin-right:6px;color:var(--green)"></i> Via Painel Admin (recomendado)</h3>
+    <p>Acesse <a href="/painel" style="color:var(--green)">auth.camim.com.br/painel</a> → <strong>Sistemas</strong> → <strong>Registrar novo sistema</strong>.</p>
+    <p>O painel exibe o <code>client_secret</code> <strong>uma única vez</strong>. Copie e guarde com segurança.</p>
+
+    <h3><i class="fas fa-terminal" style="margin-right:6px;color:var(--green)"></i> Via cURL (com chave de admin)</h3>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      <pre><code>curl -X POST https://auth.camim.com.br/admin/clients \
+  -H "x-admin-api-key: SUA_CHAVE_ADMIN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "client_name": "Nome do Sistema",
+    "redirect_uris": ["https://seusistema.com.br/auth/callback"],
+    "post_logout_redirect_uris": ["https://seusistema.com.br"],
+    "description": "Descrição do sistema"
+  }'</code></pre>
+    </div>
+    <p>Resposta:</p>
+    <div class="code-wrap">
+      <pre><code>{
+  "client_id": "camim_a1b2c3d4e5f6g7h8",
+  "client_secret": "abc123def456...",
+  "client_name": "Nome do Sistema",
+  "redirect_uris": ["https://seusistema.com.br/auth/callback"]
+}</code></pre>
+    </div>
+    <div class="callout">
+      <i class="fas fa-info-circle"></i>
+      <p>Não tem a chave de admin? Envie as URLs para o administrador do Camim e ele devolve as credenciais.</p>
+    </div>
+  </section>
+
+  <!-- PASSO 1 -->
+  <section id="passo1">
+    <h2>Passo 1 — Redirecionar o usuário</h2>
+    <p>Monte a URL e redirecione o navegador do usuário:</p>
+    <div class="code-wrap">
+      <pre><code>https://auth.camim.com.br/auth
+  ?client_id=camim_SEU_CLIENT_ID
+  &redirect_uri=https://seusistema.com.br/auth/callback
+  &response_type=code
+  &scope=openid profile email
+  &state=VALOR_ALEATORIO_GERADO_POR_VOCE</code></pre>
+    </div>
+    <table>
+      <thead><tr><th>Parâmetro</th><th>Valor</th><th>Descrição</th></tr></thead>
+      <tbody>
+        <tr><td>client_id</td><td>camim_...</td><td>ID do seu sistema</td></tr>
+        <tr><td>redirect_uri</td><td>URL cadastrada</td><td>Exatamente igual à cadastrada no registro</td></tr>
+        <tr><td>response_type</td><td>code</td><td>Sempre <code>code</code></td></tr>
+        <tr><td>scope</td><td>openid profile email</td><td>Dados que você quer acessar</td></tr>
+        <tr><td>state</td><td>string aleatória</td><td>Salve na sessão para verificar depois (anti-CSRF)</td></tr>
+        <tr><td>code_challenge</td><td>string (opcional)</td><td>Para PKCE — recomendado em SPAs</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- PASSO 2 -->
+  <section id="passo2">
+    <h2>Passo 2 — Receber o código</h2>
+    <p>Após o login, o IDCamim redireciona para sua <code>redirect_uri</code>:</p>
+    <div class="code-wrap">
+      <pre><code>https://seusistema.com.br/auth/callback
+  ?code=CODIGO_AQUI
+  &state=VALOR_ALEATORIO
+  &iss=https://auth.camim.com.br</code></pre>
+    </div>
+    <div class="callout warn">
+      <i class="fas fa-exclamation-triangle"></i>
+      <p><strong>Sempre verifique o <code>state</code></strong> — compare com o valor salvo na sessão. Se divergir, rejeite a requisição (ataque CSRF). O código expira em <strong>10 minutos</strong> e é de uso único.</p>
+    </div>
+    <p>Em caso de erro:</p>
+    <div class="code-wrap">
+      <pre><code>https://seusistema.com.br/auth/callback?error=access_denied&error_description=...</code></pre>
+    </div>
+  </section>
+
+  <!-- PASSO 3 -->
+  <section id="passo3">
+    <h2>Passo 3 — Obter tokens</h2>
+    <p>Faça esta requisição <strong>do seu backend</strong> — nunca do frontend:</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      <pre><code>curl -X POST https://auth.camim.com.br/token \
+  -u "camim_SEU_CLIENT_ID:SEU_CLIENT_SECRET" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=authorization_code" \
+  -d "code=CODIGO_RECEBIDO" \
+  -d "redirect_uri=https://seusistema.com.br/auth/callback"</code></pre>
+    </div>
+    <p>A autenticação é via <strong>HTTP Basic Auth</strong> (<code>-u</code>) — o curl codifica automaticamente em Base64.</p>
+    <p>Resposta:</p>
+    <div class="code-wrap">
+      <pre><code>{
+  "access_token": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "id_token":     "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type":   "Bearer",
+  "expires_in":   3600,
+  "scope":        "openid profile email"
+}</code></pre>
+    </div>
+    <table>
+      <thead><tr><th>Campo</th><th>Descrição</th></tr></thead>
+      <tbody>
+        <tr><td>access_token</td><td>Token opaco para acessar <code>/me</code>. Dura <strong>1 hora</strong>.</td></tr>
+        <tr><td>id_token</td><td>JWT assinado ES256 com dados básicos do usuário.</td></tr>
+        <tr><td>expires_in</td><td>Segundos até expirar (3600 = 1h).</td></tr>
+        <tr><td>refresh_token</td><td>Presente se <code>offline_access</code> foi solicitado. Dura 30 dias.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- PASSO 4 -->
+  <section id="passo4">
+    <h2>Passo 4 — Dados do usuário</h2>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      <pre><code>curl https://auth.camim.com.br/me \
+  -H "Authorization: Bearer SEU_ACCESS_TOKEN"</code></pre>
+    </div>
+    <p>Resposta:</p>
+    <div class="code-wrap">
+      <pre><code>{
+  "sub":            "52664cd8-6976-4c76-ae81-a7c2ae9adee5",
+  "email":          "cristiano@camim.com.br",
+  "email_verified": true,
+  "name":           "Cristiano Camim",
+  "given_name":     "Cristiano",
+  "family_name":    "Camim",
+  "picture":        null,
+  "updated_at":     1742598000
+}</code></pre>
+    </div>
+    <div class="callout">
+      <i class="fas fa-fingerprint"></i>
+      <p>Use sempre o <strong><code>sub</code></strong> como identificador do usuário no seu banco — é um UUID único e imutável. O e-mail pode mudar; o <code>sub</code> nunca muda.</p>
+    </div>
+  </section>
+
+  <!-- SCOPES -->
+  <section id="scopes">
+    <h2>Scopes disponíveis</h2>
+    <p>Informe no parâmetro <code>scope</code> separados por espaço.</p>
+    <table>
+      <thead><tr><th>Scope</th><th>Campos retornados</th><th>Obrigatório?</th></tr></thead>
+      <tbody>
+        <tr><td>openid</td><td><code>sub</code>, <code>iss</code>, <code>aud</code>, <code>exp</code>, <code>iat</code></td><td>Sim — sempre</td></tr>
+        <tr><td>email</td><td><code>email</code>, <code>email_verified</code></td><td>Não</td></tr>
+        <tr><td>profile</td><td><code>name</code>, <code>given_name</code>, <code>family_name</code>, <code>picture</code>, <code>updated_at</code></td><td>Não</td></tr>
+        <tr><td>phone</td><td><code>phone_number</code></td><td>Não</td></tr>
+        <tr><td>offline_access</td><td>Gera <code>refresh_token</code> (30 dias)</td><td>Não</td></tr>
+      </tbody>
+    </table>
+    <p>Exemplo completo: <span class="scope-pill">openid</span><span class="scope-pill">profile</span><span class="scope-pill">email</span><span class="scope-pill">phone</span><span class="scope-pill">offline_access</span></p>
+  </section>
+
+  <!-- EXEMPLOS -->
+  <section id="exemplos">
+    <h2>Exemplos por linguagem</h2>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab(this,'python')"><i class="fab fa-python"></i> Python</button>
+      <button class="tab-btn" onclick="switchTab(this,'node')"><i class="fab fa-node-js"></i> Node.js</button>
+      <button class="tab-btn" onclick="switchTab(this,'php')"><i class="fab fa-php"></i> PHP</button>
+      <button class="tab-btn" onclick="switchTab(this,'django')"><i class="fas fa-dragon"></i> Django</button>
+      <button class="tab-btn" onclick="switchTab(this,'nextjs')"><i class="fas fa-atom"></i> Next.js</button>
+    </div>
+
+    <div id="tab-python" class="tab-content active">
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        <pre><code>import secrets, urllib.parse, requests
+from flask import Flask, redirect, request, session
+
+app = Flask(__name__)
+app.secret_key = "sua-secret-key"
+
+CLIENT_ID     = "camim_SEU_CLIENT_ID"
+CLIENT_SECRET = "SEU_CLIENT_SECRET"
+REDIRECT_URI  = "https://seusistema.com.br/auth/callback"
+CAMIM_BASE    = "https://auth.camim.com.br"
+
+@app.route("/login")
+def login():
+    state = secrets.token_urlsafe(16)
+    session["oauth_state"] = state
+    params = urllib.parse.urlencode({
+        "client_id": CLIENT_ID, "redirect_uri": REDIRECT_URI,
+        "response_type": "code", "scope": "openid profile email", "state": state,
+    })
+    return redirect(f"{CAMIM_BASE}/auth?{params}")
+
+@app.route("/auth/callback")
+def callback():
+    if "error" in request.args:
+        return f"Erro: {request.args['error_description']}", 400
+    if request.args.get("state") != session.pop("oauth_state", None):
+        return "State inválido", 400
+
+    tokens = requests.post(f"{CAMIM_BASE}/token",
+        auth=(CLIENT_ID, CLIENT_SECRET),
+        data={"grant_type": "authorization_code",
+              "code": request.args["code"], "redirect_uri": REDIRECT_URI},
+    ).json()
+    user = requests.get(f"{CAMIM_BASE}/me",
+        headers={"Authorization": f"Bearer {tokens['access_token']}"}
+    ).json()
+
+    session["user"] = {"id": user["sub"], "email": user["email"], "name": user.get("name")}
+    return redirect("/dashboard")</code></pre>
+      </div>
+    </div>
+
+    <div id="tab-node" class="tab-content">
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        <pre><code>const express = require('express');
+const axios   = require('axios');
+const crypto  = require('crypto');
+const session = require('express-session');
+
+const app = express();
+app.use(session({ secret: 'sua-secret-key', resave: false, saveUninitialized: false }));
+
+const CLIENT_ID     = 'camim_SEU_CLIENT_ID';
+const CLIENT_SECRET = 'SEU_CLIENT_SECRET';
+const REDIRECT_URI  = 'https://seusistema.com.br/auth/callback';
+const CAMIM_BASE    = 'https://auth.camim.com.br';
+
+app.get('/login', (req, res) => {
+  const state = crypto.randomBytes(16).toString('hex');
+  req.session.oauthState = state;
+  const params = new URLSearchParams({
+    client_id: CLIENT_ID, redirect_uri: REDIRECT_URI,
+    response_type: 'code', scope: 'openid profile email', state,
+  });
+  res.redirect(`${CAMIM_BASE}/auth?${params}`);
+});
+
+app.get('/auth/callback', async (req, res) => {
+  if (req.query.error) return res.status(400).send(req.query.error_description);
+  if (req.query.state !== req.session.oauthState) return res.status(400).send('State inválido');
+  delete req.session.oauthState;
+
+  const { data: tokens } = await axios.post(`${CAMIM_BASE}/token`,
+    new URLSearchParams({ grant_type: 'authorization_code',
+      code: req.query.code, redirect_uri: REDIRECT_URI }),
+    { auth: { username: CLIENT_ID, password: CLIENT_SECRET } }
+  );
+  const { data: user } = await axios.get(`${CAMIM_BASE}/me`,
+    { headers: { Authorization: `Bearer ${tokens.access_token}` } }
+  );
+  req.session.user = { id: user.sub, email: user.email, name: user.name };
+  res.redirect('/dashboard');
+});</code></pre>
+      </div>
+    </div>
+
+    <div id="tab-php" class="tab-content">
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        <pre><code>&lt;?php // login.php
+session_start();
+$state = bin2hex(random_bytes(16));
+$_SESSION['oauth_state'] = $state;
+header('Location: https://auth.camim.com.br/auth?' . http_build_query([
+    'client_id' => 'camim_SEU_CLIENT_ID',
+    'redirect_uri' => 'https://seusistema.com.br/callback.php',
+    'response_type' => 'code', 'scope' => 'openid profile email', 'state' => $state,
+]));
+
+// callback.php
+if ($_GET['state'] !== $_SESSION['oauth_state']) die('State inválido');
+$ch = curl_init('https://auth.camim.com.br/token');
+curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true,
+    CURLOPT_USERPWD => 'camim_SEU_CLIENT_ID:SEU_CLIENT_SECRET',
+    CURLOPT_POSTFIELDS => http_build_query(['grant_type' => 'authorization_code',
+        'code' => $_GET['code'], 'redirect_uri' => 'https://seusistema.com.br/callback.php']),
+]);
+$tokens = json_decode(curl_exec($ch), true);
+$ch = curl_init('https://auth.camim.com.br/me');
+curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => ["Authorization: Bearer {$tokens['access_token']}"],
+]);
+$user = json_decode(curl_exec($ch), true);
+$_SESSION['user'] = ['id' => $user['sub'], 'email' => $user['email']];</code></pre>
+      </div>
+    </div>
+
+    <div id="tab-django" class="tab-content">
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        <pre><code># pip install authlib
+# settings.py
+IDCAMIM = {
+    "CLIENT_ID":     "camim_SEU_CLIENT_ID",
+    "CLIENT_SECRET": "SEU_CLIENT_SECRET",
+    "REDIRECT_URI":  "https://seusistema.com.br/auth/callback",
+    "DISCOVERY_URL": "https://auth.camim.com.br/.well-known/openid-configuration",
+    "SCOPES":        "openid profile email",
+}
+
+# views.py
+import secrets
+from django.conf import settings
+from django.shortcuts import redirect
+from authlib.integrations.requests_client import OAuth2Session
+
+def camim_login(request):
+    conf = settings.IDCAMIM
+    state = secrets.token_urlsafe(16)
+    request.session["oauth_state"] = state
+    client = OAuth2Session(conf["CLIENT_ID"], redirect_uri=conf["REDIRECT_URI"], scope=conf["SCOPES"])
+    meta = client.get(conf["DISCOVERY_URL"]).json()
+    url, _ = client.create_authorization_url(meta["authorization_endpoint"], state=state)
+    return redirect(url)
+
+def camim_callback(request):
+    conf = settings.IDCAMIM
+    client = OAuth2Session(conf["CLIENT_ID"], redirect_uri=conf["REDIRECT_URI"])
+    meta = client.get(conf["DISCOVERY_URL"]).json()
+    tokens = client.fetch_token(meta["token_endpoint"], code=request.GET["code"],
+                                client_secret=conf["CLIENT_SECRET"])
+    user = client.get(meta["userinfo_endpoint"]).json()
+    request.session["user"] = {"id": user["sub"], "email": user["email"], "name": user.get("name")}
+    return redirect("/dashboard/")</code></pre>
+      </div>
+    </div>
+
+    <div id="tab-nextjs" class="tab-content">
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        <pre><code>// pages/api/auth/[...nextauth].js
+import NextAuth from "next-auth";
+
+export default NextAuth({
+  providers: [{
+    id: "idcamim", name: "Camim", type: "oauth",
+    wellKnown: "https://auth.camim.com.br/.well-known/openid-configuration",
+    clientId: process.env.IDCAMIM_CLIENT_ID,
+    clientSecret: process.env.IDCAMIM_CLIENT_SECRET,
+    authorization: { params: { scope: "openid profile email" } },
+    idToken: true, checks: ["state"],
+    profile(profile) {
+      return { id: profile.sub, name: profile.name, email: profile.email };
+    },
+  }],
+});
+
+// .env.local
+// IDCAMIM_CLIENT_ID=camim_SEU_CLIENT_ID
+// IDCAMIM_CLIENT_SECRET=SEU_CLIENT_SECRET
+// NEXTAUTH_SECRET=outra-chave-aleatoria
+// NEXTAUTH_URL=https://seusistema.com.br</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOGOUT -->
+  <section id="logout">
+    <h2>Logout</h2>
+    <p>Destrua a sessão local e redirecione para o IDCamim:</p>
+    <div class="code-wrap">
+      <pre><code>https://auth.camim.com.br/session/end
+  ?id_token_hint=ID_TOKEN_DO_USUARIO
+  &post_logout_redirect_uri=https://seusistema.com.br</code></pre>
+    </div>
+    <table>
+      <thead><tr><th>Parâmetro</th><th>Descrição</th></tr></thead>
+      <tbody>
+        <tr><td>id_token_hint</td><td>O <code>id_token</code> recebido na etapa 3. Identifica a sessão.</td></tr>
+        <tr><td>post_logout_redirect_uri</td><td>Para onde redirecionar após logout. Deve estar cadastrada.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- REFRESH -->
+  <section id="refresh">
+    <h2>Refresh Token</h2>
+    <p>Solicite <code>offline_access</code> no scope para receber um <code>refresh_token</code> (válido 30 dias).</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      <pre><code>curl -X POST https://auth.camim.com.br/token \
+  -u "camim_SEU_CLIENT_ID:SEU_CLIENT_SECRET" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=refresh_token" \
+  -d "refresh_token=SEU_REFRESH_TOKEN"</code></pre>
+    </div>
+    <table>
+      <thead><tr><th>Token</th><th>Validade</th></tr></thead>
+      <tbody>
+        <tr><td>access_token</td><td>1 hora</td></tr>
+        <tr><td>refresh_token</td><td>30 dias</td></tr>
+        <tr><td>Sessão no IDCamim</td><td>14 dias</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- INTROSPECÇÃO -->
+  <section id="introspect">
+    <h2>Introspecção de token</h2>
+    <p>Valide um <code>access_token</code> a partir do backend (útil em microsserviços):</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+      <pre><code>curl -X POST https://auth.camim.com.br/token/introspection \
+  -u "camim_SEU_CLIENT_ID:SEU_CLIENT_SECRET" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "token=ACCESS_TOKEN_A_VERIFICAR"</code></pre>
+    </div>
+    <p>Resposta — token válido:</p>
+    <div class="code-wrap">
+      <pre><code>{ "active": true, "sub": "uuid...", "scope": "openid profile email", "exp": 1742601600 }</code></pre>
+    </div>
+    <p>Resposta — token inválido ou expirado:</p>
+    <div class="code-wrap">
+      <pre><code>{ "active": false }</code></pre>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <h2>FAQ</h2>
+
+    <h3>O usuário precisa ter conta no meu sistema?</h3>
+    <p>Não. No primeiro login, use o <code>sub</code> para criar o registro automaticamente.</p>
+
+    <h3>Por que usar o <code>sub</code> e não o e-mail como identificador?</h3>
+    <p>O <code>sub</code> é um UUID imutável. E-mails podem mudar. Sempre associe pelo <code>sub</code>.</p>
+
+    <h3>Por que a troca de código deve ser feita no backend?</h3>
+    <p>Porque exige o <code>client_secret</code>. Se feita no frontend, o secret fica exposto a qualquer um. Nunca envie o secret ao navegador.</p>
+
+    <h3>O token expirou. E agora?</h3>
+    <p>Se você solicitou <code>offline_access</code>, use o <code>refresh_token</code>. Caso contrário, redirecione para login — como o IDCamim mantém sessão por 14 dias, normalmente é transparente.</p>
+
+    <h3>Posso usar PKCE?</h3>
+    <p>Sim — <code>S256</code> e <code>plain</code> são suportados. Recomendado para SPAs e apps mobile onde não é possível guardar um <code>client_secret</code>.</p>
+
+    <h3>Qual Content-Type usar no <code>/token</code>?</h3>
+    <p><code>application/x-www-form-urlencoded</code> — não JSON. O curl faz isso automaticamente com <code>-d</code>.</p>
+
+    <h3>Quais domínios de e-mail são aceitos?</h3>
+    <p>Somente domínios autorizados pelo administrador em <a href="/painel/dominios" style="color:var(--green)">auth.camim.com.br/painel/dominios</a>.</p>
+  </section>
+
+</main>
+</div>
+
+<script>
+function switchTab(btn, lang) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + lang).classList.add('active');
+}
+function copyCode(btn) {
+  const code = btn.nextElementSibling.querySelector('code').innerText;
+  navigator.clipboard.writeText(code).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copiado!';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+// highlight nav on scroll
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('nav.sidebar a[href^="#"]');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 80) cur = s.id; });
+  navLinks.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + cur);
+  });
+}, { passive: true });
+</script>
+</body>
+</html>
