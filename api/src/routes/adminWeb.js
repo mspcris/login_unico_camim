@@ -199,6 +199,83 @@ router.post('/painel/usuarios/:id/reenviar', requireAdmin, parseForm, async (req
   }
 });
 
+// ─── Systems (OAuth2 Clients) ────────────────────────────────────────────────
+
+router.get('/painel/sistemas', requireAdmin, async (req, res) => {
+  try {
+    const { rows } = await getPool().query(
+      `SELECT client_id, client_name, redirect_uris, active, description, created_at
+       FROM clients ORDER BY created_at DESC`
+    );
+    return res.render('admin/sistemas', {
+      clients: rows,
+      admin: getAdmin(req),
+      newClient: null,
+      error: req.query.error || null,
+      issuer: process.env.ISSUER || 'https://auth.camim.com.br',
+    });
+  } catch (err) {
+    console.error('[AdminWeb] GET /painel/sistemas error:', err.message);
+    return res.status(500).send('Erro interno.');
+  }
+});
+
+router.post('/painel/sistemas', requireAdmin, parseForm, async (req, res) => {
+  const { client_name, redirect_uri, post_logout_uri, description } = req.body;
+
+  const renderError = async (msg) => {
+    const { rows } = await getPool().query(`SELECT client_id, client_name, redirect_uris, active, description, created_at FROM clients ORDER BY created_at DESC`);
+    return res.render('admin/sistemas', { clients: rows, admin: getAdmin(req), newClient: null, error: msg, issuer: process.env.ISSUER || 'https://auth.camim.com.br' });
+  };
+
+  if (!client_name || !redirect_uri) return renderError('Nome e URL de callback são obrigatórios.');
+
+  try { new URL(redirect_uri); } catch { return renderError('URL de callback inválida.'); }
+
+  try {
+    const crypto = require('crypto');
+    const clientId = 'camim_' + crypto.randomBytes(8).toString('hex');
+    const clientSecret = crypto.randomBytes(32).toString('hex');
+
+    const db = getPool();
+    await db.query(
+      `INSERT INTO clients (client_id, client_secret, client_name, redirect_uris, post_logout_redirect_uris, scope, description)
+       VALUES ($1, $2, $3, $4, $5, 'openid profile email', $6)`,
+      [clientId, clientSecret, client_name.trim(), [redirect_uri], post_logout_uri ? [post_logout_uri] : [], description || null]
+    );
+
+    const { rows } = await db.query(`SELECT client_id, client_name, redirect_uris, active, description, created_at FROM clients ORDER BY created_at DESC`);
+    return res.render('admin/sistemas', {
+      clients: rows,
+      admin: getAdmin(req),
+      newClient: { client_id: clientId, client_secret: clientSecret },
+      error: null,
+      issuer: process.env.ISSUER || 'https://auth.camim.com.br',
+    });
+  } catch (err) {
+    console.error('[AdminWeb] POST /painel/sistemas error:', err.message);
+    return renderError('Erro interno ao registrar sistema.');
+  }
+});
+
+router.post('/painel/sistemas/:clientId/desativar', requireAdmin, parseForm, async (req, res) => {
+  try {
+    await getPool().query('UPDATE clients SET active = FALSE WHERE client_id = $1', [req.params.clientId]);
+    return redirectFlash(res, '/painel/sistemas', 'success', 'Sistema desativado.');
+  } catch (err) {
+    return redirectFlash(res, '/painel/sistemas', 'error', 'Erro ao desativar sistema.');
+  }
+});
+
+router.post('/painel/sistemas/:clientId/ativar', requireAdmin, parseForm, async (req, res) => {
+  try {
+    await getPool().query('UPDATE clients SET active = TRUE WHERE client_id = $1', [req.params.clientId]);
+    return redirectFlash(res, '/painel/sistemas', 'success', 'Sistema ativado.');
+  } catch (err) {
+    return redirectFlash(res, '/painel/sistemas', 'error', 'Erro ao ativar sistema.');
+  }
+});
+
 // ─── Domains ─────────────────────────────────────────────────────────────────
 
 router.get('/painel/dominios', requireAdmin, async (req, res) => {

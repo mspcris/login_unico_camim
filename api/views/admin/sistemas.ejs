@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistemas — Painel Camim</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="admin-layout">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-brand">
+        <span class="admin-sidebar-brand-name">Camim</span>
+        <span class="admin-sidebar-brand-sub">ADMIN</span>
+      </div>
+      <nav>
+        <a href="/painel/usuarios">Usuários</a>
+        <a href="/painel/dominios">Domínios</a>
+        <a href="/painel/sistemas" class="active">Sistemas</a>
+      </nav>
+      <div class="admin-sidebar-footer">
+        <a href="/painel/logout">Sair</a>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="admin-main">
+      <div class="admin-header">
+        <h1>Sistemas</h1>
+        <p>Registre sistemas que usarão o Login Único Camim (idCamim).</p>
+      </div>
+
+      <!-- Credenciais geradas (mostradas UMA vez) -->
+      <% if (newClient) { %>
+        <div style="background:#f0fdf4;border:2px solid #16a34a;border-radius:10px;padding:24px;margin-bottom:28px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#16a34a"/><path d="M7 12.5l3.5 3.5 6.5-7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <strong style="color:#15803d;font-size:1rem;">Sistema registrado! Copie as credenciais agora — o client_secret não será exibido novamente.</strong>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div>
+              <label style="font-size:0.8rem;font-weight:600;color:#166534;text-transform:uppercase;letter-spacing:.05em;">client_id</label>
+              <div style="display:flex;gap:8px;margin-top:4px;">
+                <code id="new-client-id" style="flex:1;background:#fff;border:1.5px solid #86efac;border-radius:6px;padding:10px 14px;font-size:0.9rem;word-break:break-all;"><%= newClient.client_id %></code>
+                <button onclick="copyText('new-client-id')" style="background:#16a34a;color:#fff;border:none;border-radius:6px;padding:0 14px;cursor:pointer;font-size:0.85rem;white-space:nowrap;">Copiar</button>
+              </div>
+            </div>
+            <div>
+              <label style="font-size:0.8rem;font-weight:600;color:#166534;text-transform:uppercase;letter-spacing:.05em;">client_secret</label>
+              <div style="display:flex;gap:8px;margin-top:4px;">
+                <code id="new-client-secret" style="flex:1;background:#fff;border:1.5px solid #86efac;border-radius:6px;padding:10px 14px;font-size:0.9rem;word-break:break-all;"><%= newClient.client_secret %></code>
+                <button onclick="copyText('new-client-secret')" style="background:#16a34a;color:#fff;border:none;border-radius:6px;padding:0 14px;cursor:pointer;font-size:0.85rem;white-space:nowrap;">Copiar</button>
+              </div>
+            </div>
+            <div>
+              <label style="font-size:0.8rem;font-weight:600;color:#166534;text-transform:uppercase;letter-spacing:.05em;">Discovery URL (para configurar a biblioteca OIDC)</label>
+              <div style="display:flex;gap:8px;margin-top:4px;">
+                <code id="discovery-url" style="flex:1;background:#fff;border:1.5px solid #86efac;border-radius:6px;padding:10px 14px;font-size:0.9rem;word-break:break-all;"><%= issuer %>/.well-known/openid-configuration</code>
+                <button onclick="copyText('discovery-url')" style="background:#16a34a;color:#fff;border:none;border-radius:6px;padding:0 14px;cursor:pointer;font-size:0.85rem;white-space:nowrap;">Copiar</button>
+              </div>
+            </div>
+          </div>
+          <p style="margin-top:16px;font-size:0.85rem;color:#166534;">
+            Adicione <strong>IDCAMIM_CLIENT_ID</strong>, <strong>IDCAMIM_CLIENT_SECRET</strong> e <strong>IDCAMIM_REDIRECT_URI</strong> no <code>.env</code> do sistema e reinicie o serviço.
+          </p>
+        </div>
+      <% } %>
+
+      <!-- Flash -->
+      <% if (error) { %>
+        <div class="flash-error" style="margin-bottom:20px;"><%= error %></div>
+      <% } %>
+
+      <!-- Cadastrar novo sistema -->
+      <div class="table-container" style="margin-bottom:28px;">
+        <div style="padding:20px 24px 0;border-bottom:1px solid #e5e7eb;padding-bottom:16px;margin-bottom:20px;">
+          <h2 style="font-size:1rem;font-weight:600;color:#111827;">Registrar novo sistema</h2>
+        </div>
+        <form method="POST" action="/painel/sistemas" style="padding:0 24px 24px;display:flex;flex-direction:column;gap:14px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div>
+              <label style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:6px;">Nome do sistema</label>
+              <input type="text" name="client_name" required placeholder="Ex: Portal RH" class="form-input" />
+            </div>
+            <div>
+              <label style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:6px;">URL de callback (redirect_uri)</label>
+              <input type="url" name="redirect_uri" required placeholder="https://sistema.com.br/auth/callback" class="form-input" />
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div>
+              <label style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:6px;">URL pós-logout <span style="color:#9ca3af;font-weight:400;">(opcional)</span></label>
+              <input type="url" name="post_logout_uri" placeholder="https://sistema.com.br" class="form-input" />
+            </div>
+            <div>
+              <label style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:6px;">Descrição <span style="color:#9ca3af;font-weight:400;">(opcional)</span></label>
+              <input type="text" name="description" placeholder="Breve descrição do sistema" class="form-input" />
+            </div>
+          </div>
+          <div>
+            <button type="submit" class="btn-primary" style="width:auto;padding:10px 28px;margin-top:0;">Registrar e gerar credenciais</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Lista de sistemas -->
+      <div class="table-container">
+        <div style="padding:20px 24px 16px;">
+          <h2 style="font-size:1rem;font-weight:600;color:#111827;">Sistemas registrados</h2>
+        </div>
+        <% if (clients.length === 0) { %>
+          <p style="padding:0 24px 24px;color:#6b7280;font-size:0.9rem;">Nenhum sistema registrado ainda.</p>
+        <% } else { %>
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>client_id</th>
+                <th>Redirect URI</th>
+                <th>Status</th>
+                <th>Criado em</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% clients.forEach(c => { %>
+                <tr>
+                  <td><strong><%= c.client_name %></strong><% if (c.description) { %><br><span style="font-size:0.8rem;color:#6b7280;"><%= c.description %></span><% } %></td>
+                  <td><code style="font-size:0.8rem;background:#f3f4f6;padding:2px 6px;border-radius:4px;"><%= c.client_id %></code></td>
+                  <td style="font-size:0.85rem;max-width:220px;word-break:break-all;"><%= (c.redirect_uris || []).join(', ') %></td>
+                  <td>
+                    <% if (c.active) { %>
+                      <span class="badge badge-active">Ativo</span>
+                    <% } else { %>
+                      <span class="badge badge-inactive">Inativo</span>
+                    <% } %>
+                  </td>
+                  <td style="font-size:0.85rem;white-space:nowrap;"><%= new Date(c.created_at).toLocaleDateString('pt-BR') %></td>
+                  <td>
+                    <% if (c.active) { %>
+                      <form method="POST" action="/painel/sistemas/<%= c.client_id %>/desativar" style="display:inline;" onsubmit="return confirm('Desativar este sistema? Ele não poderá mais fazer login.');">
+                        <button type="submit" class="btn-sm btn-danger">Desativar</button>
+                      </form>
+                    <% } else { %>
+                      <form method="POST" action="/painel/sistemas/<%= c.client_id %>/ativar" style="display:inline;">
+                        <button type="submit" class="btn-sm" style="background:#16a34a;color:#fff;">Ativar</button>
+                      </form>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } %>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    function copyText(id) {
+      const el = document.getElementById(id);
+      navigator.clipboard.writeText(el.textContent.trim()).then(() => {
+        const btn = el.nextElementSibling;
+        const orig = btn.textContent;
+        btn.textContent = 'Copiado!';
+        btn.style.background = '#15803d';
+        setTimeout(() => { btn.textContent = orig; btn.style.background = '#16a34a'; }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
