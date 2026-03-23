@@ -66,7 +66,21 @@ function createProvider(jwks) {
       // RP-initiated logout (GET /session/end)
       rpInitiatedLogout: {
         enabled: true,
-        // Custom success page — replaces the built-in white "Sign-out Success" page
+        // Página de confirmação de logout — substitui o padrão em inglês
+        async logoutSource(ctx, form) {
+          const ejs  = require('ejs');
+          const path = require('path');
+          const view = path.join(__dirname, '../views/logout.ejs');
+          ctx.type = 'text/html';
+          const xsrfMatch = form.match(/name="xsrf"\s+value="([^"]+)"/);
+          ctx.body = await ejs.renderFile(view, {
+            loggedOut: false,
+            uid: true,
+            xsrf: xsrfMatch ? xsrfMatch[1] : null,
+            logout: 'yes',
+          });
+        },
+        // Página de sucesso — substitui o padrão em inglês
         async postLogoutSuccessSource(ctx) {
           const ejs  = require('ejs');
           const path = require('path');
