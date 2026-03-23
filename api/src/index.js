@@ -46,6 +46,9 @@ async function main() {
     app.set('views', path.join(__dirname, '..', 'views'));
     app.set('view engine', 'ejs');
 
+    // Trust nginx reverse proxy (required for HTTPS detection)
+    app.set('trust proxy', 1);
+
     // Static files (CSS, images, etc.)
     app.use(express.static(path.join(__dirname, '..', 'public')));
 
