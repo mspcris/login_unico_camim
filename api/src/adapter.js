@@ -43,6 +43,7 @@ class PostgresAdapter {
       response_types: row.response_types || ['code'],
       scope: row.scope || 'openid profile email',
       token_endpoint_auth_method: row.token_endpoint_auth_method || 'client_secret_basic',
+      id_token_signed_response_alg: 'ES256',
       logo_uri: row.logo_uri || undefined,
       client_uri: row.client_uri || undefined,
     };
