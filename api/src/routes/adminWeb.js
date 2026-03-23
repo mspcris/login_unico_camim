@@ -7,67 +7,52 @@ const { getPool } = require('../database');
 const { sendActivationEmail } = require('../services/email');
 
 const router = express.Router();
-
-// Body parser for form submissions
 const parseForm = express.urlencoded({ extended: false });
 
-// ─── Auth Middleware ─────────────────────────────────────────────────────────
+const ADMIN_COOKIE = 'camim_admin';
+const COOKIE_OPTS = {
+  httpOnly: true,
+  sameSite: 'lax',
+  maxAge: 8 * 60 * 60 * 1000, // 8h
+  signed: true,
+};
 
-function requireAdminSession(req, res, next) {
-  if (req.session && req.session.adminUser) {
-    return next();
-  }
+// ─── Auth helpers ────────────────────────────────────────────────────────────
+
+function getAdmin(req) {
+  const val = req.signedCookies && req.signedCookies[ADMIN_COOKIE];
+  if (!val) return null;
+  try { return JSON.parse(val); } catch { return null; }
+}
+
+function requireAdmin(req, res, next) {
+  if (getAdmin(req)) return next();
   return res.redirect('/painel/login');
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function flashSet(req, key, value) {
-  req.session.flash = req.session.flash || {};
-  req.session.flash[key] = value;
+// Flash via query string
+function redirectFlash(res, path, type, msg) {
+  const u = new URL(path, 'http://x');
+  u.searchParams.set(type, msg);
+  return res.redirect(u.pathname + u.search);
 }
 
-function flashGet(req) {
-  const flash = req.session.flash || {};
-  delete req.session.flash;
-  return flash;
-}
+// ─── Auth routes ─────────────────────────────────────────────────────────────
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// AUTH ROUTES
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/**
- * GET /painel
- * Redirect to login or users page.
- */
 router.get('/painel', (req, res) => {
-  if (req.session && req.session.adminUser) {
-    return res.redirect('/painel/usuarios');
-  }
-  return res.redirect('/painel/login');
+  return getAdmin(req) ? res.redirect('/painel/usuarios') : res.redirect('/painel/login');
 });
 
-/**
- * GET /painel/login
- */
 router.get('/painel/login', (req, res) => {
-  if (req.session && req.session.adminUser) {
-    return res.redirect('/painel/usuarios');
-  }
-  const flash = flashGet(req);
-  return res.render('admin/login', { error: flash.error || null });
+  if (getAdmin(req)) return res.redirect('/painel/usuarios');
+  return res.render('admin/login', { error: req.query.error || null });
 });
 
-/**
- * POST /painel/login
- */
 router.post('/painel/login', parseForm, async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
+  if (!email || !password)
     return res.render('admin/login', { error: 'E-mail e senha são obrigatórios.' });
-  }
 
   try {
     const db = getPool();
@@ -76,63 +61,46 @@ router.post('/painel/login', parseForm, async (req, res) => {
       [email.trim().toLowerCase()]
     );
 
-    if (result.rows.length === 0) {
+    if (result.rows.length === 0)
       return res.render('admin/login', { error: 'Credenciais inválidas.' });
-    }
 
     const user = result.rows[0];
 
-    if (!user.is_admin || !user.active) {
+    if (!user.is_admin || !user.active)
       return res.render('admin/login', { error: 'Acesso não autorizado.' });
-    }
 
     const valid = await bcrypt.compare(password, user.password_hash);
-    if (!valid) {
+    if (!valid)
       return res.render('admin/login', { error: 'Credenciais inválidas.' });
-    }
 
-    req.session.adminUser = { id: user.id, email: user.email, name: user.name };
-    return req.session.save((err) => {
-      if (err) console.error('[AdminWeb] Session save error:', err);
-      return res.redirect('/painel/usuarios');
-    });
+    res.cookie(ADMIN_COOKIE, JSON.stringify({ id: user.id, email: user.email, name: user.name }), COOKIE_OPTS);
+    return res.redirect('/painel/usuarios');
   } catch (err) {
-    console.error('[AdminWeb] POST /painel/login error:', err.message);
+    console.error('[AdminWeb] login error:', err.message);
     return res.render('admin/login', { error: 'Erro interno. Tente novamente.' });
   }
 });
 
-/**
- * GET /painel/logout
- */
 router.get('/painel/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.redirect('/painel/login');
-  });
+  res.clearCookie(ADMIN_COOKIE);
+  return res.redirect('/painel/login');
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// USER MANAGEMENT
-// ═══════════════════════════════════════════════════════════════════════════════
+// ─── Users ───────────────────────────────────────────────────────────────────
 
-/**
- * GET /painel/usuarios
- */
-router.get('/painel/usuarios', requireAdminSession, async (req, res) => {
+router.get('/painel/usuarios', requireAdmin, async (req, res) => {
   try {
     const db = getPool();
     const result = await db.query(
-      `SELECT id, email, name, active, is_admin, created_at, updated_at,
+      `SELECT id, email, name, active, is_admin, created_at,
               (SELECT COUNT(*) FROM activation_tokens WHERE user_id = users.id) > 0 AS has_pending_token
-       FROM users
-       ORDER BY created_at DESC`
+       FROM users ORDER BY created_at DESC`
     );
-    const flash = flashGet(req);
     return res.render('admin/users', {
       users: result.rows,
-      admin: req.session.adminUser,
-      success: flash.success || null,
-      error: flash.error || null,
+      admin: getAdmin(req),
+      success: req.query.success || null,
+      error: req.query.error || null,
     });
   } catch (err) {
     console.error('[AdminWeb] GET /painel/usuarios error:', err.message);
@@ -140,211 +108,134 @@ router.get('/painel/usuarios', requireAdminSession, async (req, res) => {
   }
 });
 
-/**
- * POST /painel/usuarios/convidar
- * Invite a user via form submission.
- */
-router.post('/painel/usuarios/convidar', requireAdminSession, parseForm, async (req, res) => {
+router.post('/painel/usuarios/convidar', requireAdmin, parseForm, async (req, res) => {
   const { email } = req.body;
 
-  if (!email || typeof email !== 'string') {
-    flashSet(req, 'error', 'E-mail é obrigatório.');
-    return res.redirect('/painel/usuarios');
-  }
+  if (!email || typeof email !== 'string')
+    return redirectFlash(res, '/painel/usuarios', 'error', 'E-mail é obrigatório.');
 
   const normalizedEmail = email.trim().toLowerCase();
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(normalizedEmail)) {
-    flashSet(req, 'error', 'Formato de e-mail inválido.');
-    return res.redirect('/painel/usuarios');
-  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail))
+    return redirectFlash(res, '/painel/usuarios', 'error', 'Formato de e-mail inválido.');
 
   const emailDomain = normalizedEmail.split('@')[1];
 
   try {
     const db = getPool();
-
     const domainCheck = await db.query('SELECT domain FROM allowed_domains WHERE domain = $1', [emailDomain]);
-    if (domainCheck.rows.length === 0) {
-      flashSet(req, 'error', `O domínio @${emailDomain} não está autorizado.`);
-      return res.redirect('/painel/usuarios');
-    }
+    if (domainCheck.rows.length === 0)
+      return redirectFlash(res, '/painel/usuarios', 'error', `O domínio @${emailDomain} não está autorizado.`);
 
-    const { v4: uuidv4local } = require('uuid');
-    const placeholderHash = await bcrypt.hash(uuidv4local(), 12);
     let userId;
     try {
       const userResult = await db.query(
         `INSERT INTO users (email, password_hash, active, email_verified)
-         VALUES ($1, $2, FALSE, FALSE)
-         RETURNING id`,
-        [normalizedEmail, placeholderHash]
+         VALUES ($1, $2, FALSE, FALSE) RETURNING id`,
+        [normalizedEmail, await bcrypt.hash(uuidv4(), 12)]
       );
       userId = userResult.rows[0].id;
     } catch (dbErr) {
-      if (dbErr.code === '23505') {
-        flashSet(req, 'error', 'Já existe um usuário com este e-mail.');
-        return res.redirect('/painel/usuarios');
-      }
+      if (dbErr.code === '23505')
+        return redirectFlash(res, '/painel/usuarios', 'error', 'Já existe um usuário com este e-mail.');
       throw dbErr;
     }
 
     const token = uuidv4();
-    const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000);
     await db.query(
       'INSERT INTO activation_tokens (token, user_id, expires_at) VALUES ($1, $2, $3)',
-      [token, userId, expiresAt]
+      [token, userId, new Date(Date.now() + 72 * 60 * 60 * 1000)]
     );
 
-    const issuer = process.env.ISSUER || 'http://localhost:3000';
-    const activationUrl = `${issuer}/ativar/${token}`;
+    const activationUrl = `${process.env.ISSUER || 'http://localhost:3000'}/ativar/${token}`;
     await sendActivationEmail(normalizedEmail, null, activationUrl);
 
-    flashSet(req, 'success', `Convite enviado para ${normalizedEmail}.`);
-    return res.redirect('/painel/usuarios');
+    return redirectFlash(res, '/painel/usuarios', 'success', `Convite enviado para ${normalizedEmail}.`);
   } catch (err) {
-    console.error('[AdminWeb] POST /painel/usuarios/convidar error:', err.message);
-    flashSet(req, 'error', 'Erro interno ao enviar convite.');
-    return res.redirect('/painel/usuarios');
+    console.error('[AdminWeb] convidar error:', err.message);
+    return redirectFlash(res, '/painel/usuarios', 'error', 'Erro interno ao enviar convite.');
   }
 });
 
-/**
- * POST /painel/usuarios/:id/desativar
- */
-router.post('/painel/usuarios/:id/desativar', requireAdminSession, parseForm, async (req, res) => {
+router.post('/painel/usuarios/:id/desativar', requireAdmin, parseForm, async (req, res) => {
   try {
-    const db = getPool();
-    await db.query(
-      'UPDATE users SET active = FALSE, updated_at = NOW() WHERE id = $1',
-      [req.params.id]
-    );
-    flashSet(req, 'success', 'Usuário desativado.');
+    await getPool().query('UPDATE users SET active = FALSE, updated_at = NOW() WHERE id = $1', [req.params.id]);
+    return redirectFlash(res, '/painel/usuarios', 'success', 'Usuário desativado.');
   } catch (err) {
-    console.error('[AdminWeb] desativar error:', err.message);
-    flashSet(req, 'error', 'Erro ao desativar usuário.');
+    return redirectFlash(res, '/painel/usuarios', 'error', 'Erro ao desativar usuário.');
   }
-  return res.redirect('/painel/usuarios');
 });
 
-/**
- * POST /painel/usuarios/:id/ativar
- */
-router.post('/painel/usuarios/:id/ativar', requireAdminSession, parseForm, async (req, res) => {
+router.post('/painel/usuarios/:id/ativar', requireAdmin, parseForm, async (req, res) => {
   try {
-    const db = getPool();
-    await db.query(
-      'UPDATE users SET active = TRUE, updated_at = NOW() WHERE id = $1',
-      [req.params.id]
-    );
-    flashSet(req, 'success', 'Usuário ativado.');
+    await getPool().query('UPDATE users SET active = TRUE, updated_at = NOW() WHERE id = $1', [req.params.id]);
+    return redirectFlash(res, '/painel/usuarios', 'success', 'Usuário ativado.');
   } catch (err) {
-    console.error('[AdminWeb] ativar error:', err.message);
-    flashSet(req, 'error', 'Erro ao ativar usuário.');
+    return redirectFlash(res, '/painel/usuarios', 'error', 'Erro ao ativar usuário.');
   }
-  return res.redirect('/painel/usuarios');
 });
 
-/**
- * POST /painel/usuarios/:id/reenviar
- * Resend activation email (generate a new token).
- */
-router.post('/painel/usuarios/:id/reenviar', requireAdminSession, parseForm, async (req, res) => {
+router.post('/painel/usuarios/:id/reenviar', requireAdmin, parseForm, async (req, res) => {
   try {
     const db = getPool();
-    const userResult = await db.query('SELECT id, email, name FROM users WHERE id = $1', [req.params.id]);
+    const { rows } = await db.query('SELECT id, email, name FROM users WHERE id = $1', [req.params.id]);
+    if (rows.length === 0) return redirectFlash(res, '/painel/usuarios', 'error', 'Usuário não encontrado.');
 
-    if (userResult.rows.length === 0) {
-      flashSet(req, 'error', 'Usuário não encontrado.');
-      return res.redirect('/painel/usuarios');
-    }
-
-    const user = userResult.rows[0];
-
-    // Delete existing tokens
+    const user = rows[0];
     await db.query('DELETE FROM activation_tokens WHERE user_id = $1', [user.id]);
 
-    // Create new token
     const token = uuidv4();
-    const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000);
     await db.query(
       'INSERT INTO activation_tokens (token, user_id, expires_at) VALUES ($1, $2, $3)',
-      [token, user.id, expiresAt]
+      [token, user.id, new Date(Date.now() + 72 * 60 * 60 * 1000)]
     );
 
-    const issuer = process.env.ISSUER || 'http://localhost:3000';
-    const activationUrl = `${issuer}/ativar/${token}`;
+    const activationUrl = `${process.env.ISSUER || 'http://localhost:3000'}/ativar/${token}`;
     await sendActivationEmail(user.email, user.name, activationUrl);
 
-    flashSet(req, 'success', `Convite reenviado para ${user.email}.`);
+    return redirectFlash(res, '/painel/usuarios', 'success', `Convite reenviado para ${user.email}.`);
   } catch (err) {
     console.error('[AdminWeb] reenviar error:', err.message);
-    flashSet(req, 'error', 'Erro ao reenviar convite.');
+    return redirectFlash(res, '/painel/usuarios', 'error', 'Erro ao reenviar convite.');
   }
-  return res.redirect('/painel/usuarios');
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// DOMAIN MANAGEMENT
-// ═══════════════════════════════════════════════════════════════════════════════
+// ─── Domains ─────────────────────────────────────────────────────────────────
 
-/**
- * GET /painel/dominios
- */
-router.get('/painel/dominios', requireAdminSession, async (req, res) => {
+router.get('/painel/dominios', requireAdmin, async (req, res) => {
   try {
-    const db = getPool();
-    const result = await db.query('SELECT domain, created_at FROM allowed_domains ORDER BY domain ASC');
-    const flash = flashGet(req);
+    const { rows } = await getPool().query('SELECT domain, created_at FROM allowed_domains ORDER BY domain ASC');
     return res.render('admin/domains', {
-      domains: result.rows,
-      admin: req.session.adminUser,
-      success: flash.success || null,
-      error: flash.error || null,
+      domains: rows,
+      admin: getAdmin(req),
+      success: req.query.success || null,
+      error: req.query.error || null,
     });
   } catch (err) {
-    console.error('[AdminWeb] GET /painel/dominios error:', err.message);
     return res.status(500).send('Erro interno.');
   }
 });
 
-/**
- * POST /painel/dominios
- */
-router.post('/painel/dominios', requireAdminSession, parseForm, async (req, res) => {
+router.post('/painel/dominios', requireAdmin, parseForm, async (req, res) => {
   const { domain } = req.body;
-
-  if (!domain || domain.trim().length === 0) {
-    flashSet(req, 'error', 'Domínio é obrigatório.');
-    return res.redirect('/painel/dominios');
-  }
+  if (!domain || !domain.trim())
+    return redirectFlash(res, '/painel/dominios', 'error', 'Domínio é obrigatório.');
 
   const normalized = domain.trim().toLowerCase();
-
   try {
-    const db = getPool();
-    await db.query('INSERT INTO allowed_domains (domain) VALUES ($1) ON CONFLICT DO NOTHING', [normalized]);
-    flashSet(req, 'success', `Domínio ${normalized} adicionado.`);
+    await getPool().query('INSERT INTO allowed_domains (domain) VALUES ($1) ON CONFLICT DO NOTHING', [normalized]);
+    return redirectFlash(res, '/painel/dominios', 'success', `Domínio ${normalized} adicionado.`);
   } catch (err) {
-    console.error('[AdminWeb] POST /painel/dominios error:', err.message);
-    flashSet(req, 'error', 'Erro ao adicionar domínio.');
+    return redirectFlash(res, '/painel/dominios', 'error', 'Erro ao adicionar domínio.');
   }
-  return res.redirect('/painel/dominios');
 });
 
-/**
- * POST /painel/dominios/:domain/remover
- */
-router.post('/painel/dominios/:domain/remover', requireAdminSession, parseForm, async (req, res) => {
+router.post('/painel/dominios/:domain/remover', requireAdmin, parseForm, async (req, res) => {
   try {
-    const db = getPool();
-    await db.query('DELETE FROM allowed_domains WHERE domain = $1', [req.params.domain]);
-    flashSet(req, 'success', `Domínio ${req.params.domain} removido.`);
+    await getPool().query('DELETE FROM allowed_domains WHERE domain = $1', [req.params.domain]);
+    return redirectFlash(res, '/painel/dominios', 'success', `Domínio ${req.params.domain} removido.`);
   } catch (err) {
-    console.error('[AdminWeb] remover domínio error:', err.message);
-    flashSet(req, 'error', 'Erro ao remover domínio.');
+    return redirectFlash(res, '/painel/dominios', 'error', 'Erro ao remover domínio.');
   }
-  return res.redirect('/painel/dominios');
 });
 
 module.exports = router;

@@ -3,7 +3,7 @@
 require('dotenv').config();
 
 const express = require('express');
-const session = require('express-session');
+const cookieParser = require('cookie-parser');
 const path = require('path');
 
 const { waitForDb, runMigrations, createAdminUser, seedDefaultDomains } = require('./database');
@@ -52,20 +52,8 @@ async function main() {
     // Static files (CSS, images, etc.)
     app.use(express.static(path.join(__dirname, '..', 'public')));
 
-    // Session middleware (before routes)
-    // secure: false because SSL is terminated at nginx — cookie is safe in transit
-    app.use(session({
-      name: 'camim_admin_sid',
-      secret: process.env.SESSION_SECRET || 'camim-session-secret-fallback-change-in-production',
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        httpOnly: true,
-        secure: false,
-        sameSite: 'lax',
-        maxAge: 8 * 60 * 60 * 1000, // 8 hours
-      },
-    }));
+    // Cookie parser with signing secret for admin panel auth
+    app.use(cookieParser(process.env.SESSION_SECRET || 'camim-session-secret-fallback-change-in-production'));
 
     // JSON body parser for API routes
     app.use(express.json());
