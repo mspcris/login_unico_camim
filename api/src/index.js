@@ -3,13 +3,16 @@
 require('dotenv').config();
 
 const express = require('express');
+const session = require('express-session');
 const path = require('path');
 
-const { waitForDb, runMigrations, createAdminUser } = require('./database');
+const { waitForDb, runMigrations, createAdminUser, seedDefaultDomains } = require('./database');
 const { getOrGenerateJwks } = require('./keys');
 const { createProvider } = require('./provider');
 const interactionsRouter = require('./routes/interactions');
 const adminRouter = require('./routes/admin');
+const activateRouter = require('./routes/activate');
+const adminWebRouter = require('./routes/adminWeb');
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
@@ -24,6 +27,9 @@ async function main() {
 
     console.log('[Boot] Creating admin user if needed...');
     await createAdminUser();
+
+    console.log('[Boot] Seeding default allowed domains...');
+    await seedDefaultDomains();
 
     // ── 2. Load or generate signing keys ─────────────────────────────────────
     console.log('[Boot] Loading JWKS...');
@@ -43,6 +49,18 @@ async function main() {
     // Static files (CSS, images, etc.)
     app.use(express.static(path.join(__dirname, '..', 'public')));
 
+    // Session middleware (before routes)
+    app.use(session({
+      secret: process.env.SESSION_SECRET || 'camim-session-secret-fallback-change-in-production',
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 8 * 60 * 60 * 1000, // 8 hours
+      },
+    }));
+
     // JSON body parser for API routes
     app.use(express.json());
 
@@ -58,6 +76,12 @@ async function main() {
 
     // ── 6. Admin API routes ───────────────────────────────────────────────────
     app.use('/admin', adminRouter);
+
+    // ── 6b. Activation routes (public) ────────────────────────────────────────
+    app.use('/', activateRouter);
+
+    // ── 6c. Admin web panel routes ────────────────────────────────────────────
+    app.use('/', adminWebRouter);
 
     // ── 7. OIDC interaction routes (login/consent pages) ─────────────────────
     app.use('/interaction', interactionsRouter(provider));

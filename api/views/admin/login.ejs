@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Painel Administrativo — Camim</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="card">
+
+      <!-- Logo -->
+      <div class="logo" aria-label="Camim">
+        <svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <text x="0" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="30" font-weight="700" fill="#1a56db">Camim</text>
+        </svg>
+      </div>
+
+      <p class="subtitle">Painel Administrativo</p>
+
+      <!-- Error Alert -->
+      <% if (error) { %>
+        <div class="alert-error" role="alert">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" style="flex-shrink:0" aria-hidden="true">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          </svg>
+          <span><%= error %></span>
+        </div>
+      <% } %>
+
+      <!-- Login Form -->
+      <form action="/painel/login" method="POST" novalidate>
+
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            placeholder="admin@camim.com.br"
+            autocomplete="email"
+            autofocus
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Senha</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            placeholder="••••••••"
+            autocomplete="current-password"
+            class="form-input"
+          />
+        </div>
+
+        <button type="submit" class="btn-primary">
+          Entrar
+        </button>
+
+      </form>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="page-footer">
+      <p>Login Único Camim &mdash; Painel Administrativo</p>
+    </footer>
+  </div>
+</body>
+</html>

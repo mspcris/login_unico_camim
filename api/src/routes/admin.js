@@ -3,7 +3,9 @@
 const express = require('express');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const { v4: uuidv4 } = require('uuid');
 const { getPool } = require('../database');
+const { sendActivationEmail } = require('../services/email');
 
 const router = express.Router();
 
@@ -508,6 +510,146 @@ router.delete('/users/:userId', async (req, res) => {
   } catch (err) {
     console.error('[Admin] DELETE /users/:userId error:', err.message);
     return res.status(500).json({ error: 'Erro interno ao desativar o usuário.' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DOMAIN MANAGEMENT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * GET /admin/domains
+ * List all allowed domains.
+ */
+router.get('/domains', async (req, res) => {
+  try {
+    const db = getPool();
+    const result = await db.query('SELECT domain, created_at FROM allowed_domains ORDER BY domain ASC');
+    return res.json({ domains: result.rows });
+  } catch (err) {
+    console.error('[Admin] GET /domains error:', err.message);
+    return res.status(500).json({ error: 'Erro interno ao listar domínios.' });
+  }
+});
+
+/**
+ * POST /admin/domains
+ * Add an allowed domain. Body: { domain: "example.com" }
+ */
+router.post('/domains', async (req, res) => {
+  try {
+    const { domain } = req.body;
+    if (!domain || typeof domain !== 'string' || domain.trim().length === 0) {
+      return res.status(400).json({ error: 'domain é obrigatório.' });
+    }
+
+    const normalized = domain.trim().toLowerCase();
+    const db = getPool();
+
+    try {
+      await db.query('INSERT INTO allowed_domains (domain) VALUES ($1)', [normalized]);
+    } catch (dbErr) {
+      if (dbErr.code === '23505') {
+        return res.status(409).json({ error: 'Domínio já cadastrado.' });
+      }
+      throw dbErr;
+    }
+
+    return res.status(201).json({ message: `Domínio ${normalized} adicionado com sucesso.`, domain: normalized });
+  } catch (err) {
+    console.error('[Admin] POST /domains error:', err.message);
+    return res.status(500).json({ error: 'Erro interno ao adicionar domínio.' });
+  }
+});
+
+/**
+ * DELETE /admin/domains/:domain
+ * Remove an allowed domain.
+ */
+router.delete('/domains/:domain', async (req, res) => {
+  try {
+    const { domain } = req.params;
+    const db = getPool();
+    const result = await db.query('DELETE FROM allowed_domains WHERE domain = $1 RETURNING domain', [domain]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Domínio não encontrado.' });
+    }
+
+    return res.json({ message: `Domínio ${domain} removido com sucesso.` });
+  } catch (err) {
+    console.error('[Admin] DELETE /domains error:', err.message);
+    return res.status(500).json({ error: 'Erro interno ao remover domínio.' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// USER INVITE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * POST /admin/users/invite
+ * Invite a user by email. Validates domain, creates inactive user, sends activation email.
+ * Body: { email }
+ */
+router.post('/users/invite', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || typeof email !== 'string') {
+      return res.status(400).json({ error: 'email é obrigatório.' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!emailRegex.test(normalizedEmail)) {
+      return res.status(400).json({ error: 'Formato de e-mail inválido.' });
+    }
+
+    const emailDomain = normalizedEmail.split('@')[1];
+    const db = getPool();
+
+    // Validate domain
+    const domainCheck = await db.query('SELECT domain FROM allowed_domains WHERE domain = $1', [emailDomain]);
+    if (domainCheck.rows.length === 0) {
+      return res.status(400).json({ error: `O domínio @${emailDomain} não está autorizado.` });
+    }
+
+    // Create inactive user with a placeholder password hash
+    const placeholderHash = await bcrypt.hash(uuidv4(), 12);
+    let userId;
+    try {
+      const userResult = await db.query(
+        `INSERT INTO users (email, password_hash, active, email_verified)
+         VALUES ($1, $2, FALSE, FALSE)
+         RETURNING id`,
+        [normalizedEmail, placeholderHash]
+      );
+      userId = userResult.rows[0].id;
+    } catch (dbErr) {
+      if (dbErr.code === '23505') {
+        return res.status(409).json({ error: 'Já existe um usuário com este e-mail.' });
+      }
+      throw dbErr;
+    }
+
+    // Generate activation token (expires in 72h)
+    const token = uuidv4();
+    const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000);
+    await db.query(
+      'INSERT INTO activation_tokens (token, user_id, expires_at) VALUES ($1, $2, $3)',
+      [token, userId, expiresAt]
+    );
+
+    // Send activation email
+    const issuer = process.env.ISSUER || 'http://localhost:3000';
+    const activationUrl = `${issuer}/ativar/${token}`;
+    await sendActivationEmail(normalizedEmail, null, activationUrl);
+
+    return res.status(201).json({ message: 'Convite enviado com sucesso.', user_id: userId });
+  } catch (err) {
+    console.error('[Admin] POST /users/invite error:', err.message);
+    return res.status(500).json({ error: 'Erro interno ao enviar convite.' });
   }
 });
 

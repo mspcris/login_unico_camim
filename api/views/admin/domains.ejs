@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Domínios — Painel Camim</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="admin-layout">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-logo">
+        <svg width="90" height="30" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <text x="0" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="30" font-weight="700" fill="#ffffff">Camim</text>
+        </svg>
+        <span>Admin</span>
+      </div>
+      <nav>
+        <a href="/painel/usuarios">Usuários</a>
+        <a href="/painel/dominios" class="active">Domínios</a>
+        <a href="/painel/logout">Sair</a>
+      </nav>
+    </aside>
+
+    <!-- Main content -->
+    <main class="admin-main">
+      <div class="admin-header">
+        <h1>Domínios Permitidos</h1>
+        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 4px;">
+          Apenas e-mails destes domínios podem receber convites de ativação
+        </p>
+      </div>
+
+      <!-- Flash messages -->
+      <% if (success) { %>
+        <div class="flash-success"><%= success %></div>
+      <% } %>
+      <% if (error) { %>
+        <div class="flash-error"><%= error %></div>
+      <% } %>
+
+      <!-- Add domain form -->
+      <div class="table-container" style="margin-bottom: 24px; padding: 20px 24px;">
+        <h2 style="font-size: 1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 14px;">Adicionar domínio</h2>
+        <form action="/painel/dominios" method="POST" class="form-inline">
+          <input
+            type="text"
+            name="domain"
+            required
+            placeholder="exemplo.com.br"
+            class="form-input"
+            style="margin-bottom: 0;"
+          />
+          <button type="submit" class="btn-primary" style="width: auto; margin-top: 0; white-space: nowrap;">
+            Adicionar
+          </button>
+        </form>
+      </div>
+
+      <!-- Domains table -->
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Domínio</th>
+              <th>Adicionado em</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (domains.length === 0) { %>
+              <tr>
+                <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 32px;">
+                  Nenhum domínio cadastrado.
+                </td>
+              </tr>
+            <% } %>
+            <% domains.forEach(function(d) { %>
+              <tr>
+                <td style="font-weight: 500;"><%= d.domain %></td>
+                <td style="font-size: 0.8125rem; color: var(--text-secondary);">
+                  <%= new Date(d.created_at).toLocaleDateString('pt-BR') %>
+                </td>
+                <td>
+                  <form action="/painel/dominios/<%= encodeURIComponent(d.domain) %>/remover" method="POST" style="display:inline;">
+                    <button type="submit" class="btn-sm btn-sm-danger" onclick="return confirm('Remover o domínio <%= d.domain %>?')">
+                      Remover
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+  </div>
+</body>
+</html>

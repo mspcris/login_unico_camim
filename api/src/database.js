@@ -151,6 +151,24 @@ async function runMigrations() {
       )
     `);
 
+    // allowed_domains: domains permitted to create idCamim accounts
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS allowed_domains (
+        domain      VARCHAR(255) PRIMARY KEY,
+        created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+      )
+    `);
+
+    // activation_tokens: one-time tokens for account activation
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS activation_tokens (
+        token       VARCHAR(255) PRIMARY KEY,
+        user_id     UUID         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        expires_at  TIMESTAMPTZ  NOT NULL,
+        created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+      )
+    `);
+
     await client.query('COMMIT');
     console.log('[DB] Migrations completed successfully.');
   } catch (err) {
@@ -159,6 +177,36 @@ async function runMigrations() {
   } finally {
     client.release();
   }
+}
+
+/**
+ * Seeds the allowed_domains table with default Camim domains if it is empty.
+ */
+async function seedDefaultDomains() {
+  const db = getPool();
+  const existing = await db.query('SELECT COUNT(*) FROM allowed_domains');
+  if (parseInt(existing.rows[0].count, 10) > 0) {
+    console.log('[DB] allowed_domains already seeded — skipping.');
+    return;
+  }
+
+  const defaultDomains = [
+    'camim.com.br',
+    'clinicacamim.com.br',
+    'egidesaude.com.br',
+    'arquitetodigital.com.br',
+    'sabesistemas.com.br',
+    'mrfsolution.com.br',
+  ];
+
+  for (const domain of defaultDomains) {
+    await db.query(
+      'INSERT INTO allowed_domains (domain) VALUES ($1) ON CONFLICT DO NOTHING',
+      [domain]
+    );
+  }
+
+  console.log(`[DB] Seeded ${defaultDomains.length} default allowed domains.`);
 }
 
 /**
@@ -191,4 +239,4 @@ async function createAdminUser() {
   console.log(`[DB] Admin user created: ${email}`);
 }
 
-module.exports = { getPool, waitForDb, runMigrations, createAdminUser };
+module.exports = { getPool, waitForDb, runMigrations, createAdminUser, seedDefaultDomains };
