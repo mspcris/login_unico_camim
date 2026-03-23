@@ -92,7 +92,10 @@ router.post('/painel/login', parseForm, async (req, res) => {
     }
 
     req.session.adminUser = { id: user.id, email: user.email, name: user.name };
-    return res.redirect('/painel/usuarios');
+    return req.session.save((err) => {
+      if (err) console.error('[AdminWeb] Session save error:', err);
+      return res.redirect('/painel/usuarios');
+    });
   } catch (err) {
     console.error('[AdminWeb] POST /painel/login error:', err.message);
     return res.render('admin/login', { error: 'Erro interno. Tente novamente.' });
