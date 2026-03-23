@@ -80,13 +80,8 @@ async function main() {
     // ── 7. OIDC interaction routes (login/consent pages) ─────────────────────
     app.use('/interaction', interactionsRouter(provider));
 
-    // ── 8. /me alias for /userinfo (developer convenience) ───────────────────
-    app.get('/me', (req, res, next) => {
-      req.url = '/userinfo';
-      next();
-    });
-
-    // ── 9. Mount the oidc-provider (handles all OIDC endpoints) ──────────────
+    // ── 8. Mount the oidc-provider (handles all OIDC endpoints) ──────────────
+    // NOTE: oidc-provider v7 already registers the userinfo endpoint at /me
     app.use(provider.callback());
 
     // ── 10. Start listening ───────────────────────────────────────────────────
