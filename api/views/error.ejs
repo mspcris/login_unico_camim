@@ -1,59 +1,194 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="robots" content="noindex, nofollow" />
-  <title>Erro &mdash; Camim</title>
-  <link rel="stylesheet" href="/css/style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Erro — IDCamim</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; font-family: "Segoe UI", system-ui, sans-serif; }
+
+.bg {
+  position: fixed; inset: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  z-index: 0;
+}
+.bg-cell {
+  background-size: cover; background-position: center;
+  animation: kenburns 20s ease-in-out infinite alternate;
+  filter: brightness(.55) saturate(1.1);
+}
+.bg-cell:nth-child(1)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2021/06/15145129/home.jpg'); animation-delay: 0s; }
+.bg-cell:nth-child(2)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/04/30163026/Campo-Grande-e1562878167161.jpg'); animation-delay: -3s; }
+.bg-cell:nth-child(3)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2022/03/09151823/cg2fachada-scaled.jpg'); animation-delay: -6s; }
+.bg-cell:nth-child(4)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/07/11123612/BANGU-1-as-Smart-Object-1-copy.jpg'); animation-delay: -9s; }
+.bg-cell:nth-child(5)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2020/10/19144653/del_castilho.jpg'); animation-delay: -2s; }
+.bg-cell:nth-child(6)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/04/30162346/jpa-e1562878253339.jpg'); animation-delay: -5s; }
+.bg-cell:nth-child(7)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2020/10/19144328/Recepcao-Del-Castilho.jpg'); animation-delay: -8s; }
+.bg-cell:nth-child(8)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2024/04/05115830/madureira.jpg'); animation-delay: -11s; }
+.bg-cell:nth-child(9)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2022/03/09152145/cpnhofachada.jpg'); animation-delay: -4s; }
+.bg-cell:nth-child(10) { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2020/02/21140942/nillopolis2102.jpg'); animation-delay: -7s; }
+.bg-cell:nth-child(11) { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/07/11130213/REALENGO-1-as-Smart-Object-1-copy.jpg'); animation-delay: -1s; }
+.bg-cell:nth-child(12) { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/04/30162920/NI-e1562878495907.jpg'); animation-delay: -10s; }
+@keyframes kenburns {
+  0%   { transform: scale(1) translate(0,0); }
+  100% { transform: scale(1.12) translate(-2%,-2%); }
+}
+.bg-overlay {
+  position: fixed; inset: 0; z-index: 1;
+  background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(0,20,10,.45) 0%, rgba(0,10,5,.82) 100%);
+}
+.bg-grid {
+  position: fixed; inset: 0; z-index: 2;
+  background-image:
+    linear-gradient(rgba(0,180,80,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,180,80,.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  animation: gridpulse 6s ease-in-out infinite;
+}
+@keyframes gridpulse { 0%,100% { opacity:.6; } 50% { opacity:1; } }
+.scanline {
+  position: fixed; left:0; right:0; height:2px; z-index:3;
+  background: linear-gradient(90deg, transparent, rgba(0,220,100,.4), transparent);
+  animation: scan 8s linear infinite;
+}
+@keyframes scan { 0% { top:-2px; opacity:0; } 5% { opacity:1; } 95% { opacity:1; } 100% { top:100%; opacity:0; } }
+
+.stage {
+  position: fixed; inset:0; z-index:10;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:24px;
+}
+
+.top-brand { text-align:center; margin-bottom:28px; animation: fadeDown .8s ease both; }
+@keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+.logo-wrap { position:relative; display:inline-block; margin-bottom:12px; }
+.logo-wrap img {
+  height:64px; width:64px; border-radius:50%; object-fit:cover;
+  border:2px solid rgba(0,200,80,.4);
+  animation: logopulse 3s ease-in-out infinite;
+}
+@keyframes logopulse {
+  0%,100% { filter: drop-shadow(0 0 18px rgba(0,220,100,.4)); }
+  50%      { filter: drop-shadow(0 0 36px rgba(0,220,100,.75)); }
+}
+.ring {
+  position:absolute; top:50%; left:50%; border-radius:50%;
+  border:1.5px solid rgba(0,200,80,.3);
+  transform:translate(-50%,-50%) scale(0);
+  animation:ringout 3s ease-out infinite;
+  width:64px; height:64px;
+}
+.ring:nth-child(2) { animation-delay:1s; }
+.ring:nth-child(3) { animation-delay:2s; }
+@keyframes ringout {
+  0%   { transform:translate(-50%,-50%) scale(.6); opacity:.8; }
+  100% { transform:translate(-50%,-50%) scale(2.4); opacity:0; }
+}
+.brand-name { font-size:2rem; font-weight:900; color:#fff; letter-spacing:.06em; text-shadow:0 0 40px rgba(0,200,80,.4); }
+.brand-slogan { font-size:.85rem; color:rgba(255,255,255,.55); letter-spacing:.12em; text-transform:uppercase; margin-top:4px; }
+
+.card {
+  width:min(420px,100%);
+  background:rgba(5,20,10,.72);
+  border:1px solid rgba(0,200,80,.2);
+  border-radius:20px; padding:36px 40px;
+  backdrop-filter:blur(20px) saturate(1.4); -webkit-backdrop-filter:blur(20px) saturate(1.4);
+  box-shadow:0 0 0 1px rgba(0,200,80,.08),0 8px 40px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06);
+  animation:fadeUp .9s ease .2s both;
+  text-align:center;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+
+.error-icon {
+  width:72px; height:72px; border-radius:50%;
+  background:rgba(220,50,50,.12); border:2px solid rgba(220,80,80,.3);
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 20px;
+  animation: iconpop .6s cubic-bezier(.34,1.56,.64,1) .4s both;
+}
+@keyframes iconpop { from { opacity:0; transform:scale(.5); } to { opacity:1; transform:scale(1); } }
+.error-icon i { color:#ff4444; font-size:1.8rem; }
+
+.error-title { font-size:1.2rem; font-weight:800; color:#fff; margin-bottom:12px; }
+
+.error-code {
+  display:inline-block; font-family:monospace; font-size:.82rem;
+  background:rgba(220,50,50,.1); border:1px solid rgba(220,80,80,.2);
+  color:#ff8080; padding:4px 12px; border-radius:6px; margin-bottom:12px;
+}
+
+.error-desc { font-size:.88rem; color:rgba(255,255,255,.45); line-height:1.6; margin-bottom:24px; }
+
+.btn-back {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:11px 24px; border:1px solid rgba(255,255,255,.12); border-radius:10px;
+  background:rgba(255,255,255,.05);
+  color:rgba(255,255,255,.55); font-size:.9rem; font-weight:600; cursor:pointer;
+  transition:background .2s, color .2s;
+}
+.btn-back:hover { background:rgba(255,255,255,.09); color:rgba(255,255,255,.8); }
+
+@media (max-width:480px) {
+  .bg { grid-template-columns:repeat(2,1fr); grid-template-rows:repeat(6,1fr); }
+  .brand-name { font-size:1.6rem; }
+  .card { padding:28px 22px; }
+}
+</style>
 </head>
 <body>
-  <div class="page-wrapper">
-    <div class="card card--error">
 
-      <!-- Error Icon -->
-      <div class="error-icon" aria-hidden="true">
-        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="28" cy="28" r="28" fill="#fdf2f2"/>
-          <path d="M28 16a12 12 0 100 24 12 12 0 000-24zm0 6.4a1.2 1.2 0 011.2 1.2v4.8a1.2 1.2 0 11-2.4 0v-4.8a1.2 1.2 0 011.2-1.2zm0 9.6a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" fill="#e02424"/>
-        </svg>
-      </div>
+<div class="bg">
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+</div>
+<div class="bg-overlay"></div>
+<div class="bg-grid"></div>
+<div class="scanline"></div>
 
-      <!-- Heading -->
-      <h1 class="error-title">Ocorreu um erro</h1>
+<div class="stage">
 
-      <!-- Error Details -->
-      <% if (error && error.error) { %>
-        <div class="error-code">
-          <code><%= error.error %></code>
-        </div>
-      <% } %>
-
-      <% if (error && error.error_description) { %>
-        <p class="error-description"><%= error.error_description %></p>
-      <% } else { %>
-        <p class="error-description">
-          Não foi possível completar a operação. Por favor, tente novamente.
-        </p>
-      <% } %>
-
-      <!-- Actions -->
-      <div class="error-actions">
-        <button
-          type="button"
-          class="btn-secondary"
-          onclick="window.history.back()"
-        >
-          &larr; Voltar
-        </button>
-      </div>
-
+  <div class="top-brand">
+    <div class="logo-wrap">
+      <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+      <img src="https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2021/06/15145129/home.jpg" alt="CAMIM">
     </div>
-
-    <!-- Footer -->
-    <footer class="page-footer">
-      <p>Login Único Camim &mdash; Acesso seguro e centralizado</p>
-    </footer>
+    <div class="brand-name">IDCamim</div>
+    <div class="brand-slogan">Login Único Camim</div>
   </div>
+
+  <div class="card">
+    <div class="error-icon">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <div class="error-title">Ocorreu um erro</div>
+
+    <% if (error && error.error) { %>
+      <div class="error-code"><%= error.error %></div>
+    <% } %>
+
+    <p class="error-desc">
+      <% if (error && error.error_description) { %>
+        <%= error.error_description %>
+      <% } else { %>
+        Não foi possível completar a operação. Por favor, tente novamente.
+      <% } %>
+    </p>
+
+    <button type="button" class="btn-back" onclick="window.history.back()">
+      <i class="fas fa-arrow-left"></i> Voltar
+    </button>
+  </div>
+
+</div>
 </body>
 </html>

@@ -1,92 +1,265 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="robots" content="noindex, nofollow" />
-  <title>idCamim — Login Único Camim</title>
-  <link rel="stylesheet" href="/css/style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>IDCamim — Login Único Camim</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; font-family: "Segoe UI", system-ui, sans-serif; }
+
+.bg {
+  position: fixed; inset: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  z-index: 0;
+}
+.bg-cell {
+  background-size: cover; background-position: center;
+  animation: kenburns 20s ease-in-out infinite alternate;
+  filter: brightness(.55) saturate(1.1);
+}
+.bg-cell:nth-child(1)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2021/06/15145129/home.jpg'); animation-delay: 0s; }
+.bg-cell:nth-child(2)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/04/30163026/Campo-Grande-e1562878167161.jpg'); animation-delay: -3s; }
+.bg-cell:nth-child(3)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2022/03/09151823/cg2fachada-scaled.jpg'); animation-delay: -6s; }
+.bg-cell:nth-child(4)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/07/11123612/BANGU-1-as-Smart-Object-1-copy.jpg'); animation-delay: -9s; }
+.bg-cell:nth-child(5)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2020/10/19144653/del_castilho.jpg'); animation-delay: -2s; }
+.bg-cell:nth-child(6)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/04/30162346/jpa-e1562878253339.jpg'); animation-delay: -5s; }
+.bg-cell:nth-child(7)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2020/10/19144328/Recepcao-Del-Castilho.jpg'); animation-delay: -8s; }
+.bg-cell:nth-child(8)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2024/04/05115830/madureira.jpg'); animation-delay: -11s; }
+.bg-cell:nth-child(9)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2022/03/09152145/cpnhofachada.jpg'); animation-delay: -4s; }
+.bg-cell:nth-child(10) { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2020/02/21140942/nillopolis2102.jpg'); animation-delay: -7s; }
+.bg-cell:nth-child(11) { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/07/11130213/REALENGO-1-as-Smart-Object-1-copy.jpg'); animation-delay: -1s; }
+.bg-cell:nth-child(12) { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/04/30162920/NI-e1562878495907.jpg'); animation-delay: -10s; }
+@keyframes kenburns {
+  0%   { transform: scale(1) translate(0,0); }
+  100% { transform: scale(1.12) translate(-2%,-2%); }
+}
+.bg-overlay {
+  position: fixed; inset: 0; z-index: 1;
+  background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(0,20,10,.45) 0%, rgba(0,10,5,.82) 100%);
+}
+.bg-grid {
+  position: fixed; inset: 0; z-index: 2;
+  background-image:
+    linear-gradient(rgba(0,180,80,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,180,80,.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  animation: gridpulse 6s ease-in-out infinite;
+}
+@keyframes gridpulse { 0%,100% { opacity:.6; } 50% { opacity:1; } }
+.scanline {
+  position: fixed; left:0; right:0; height:2px; z-index:3;
+  background: linear-gradient(90deg, transparent, rgba(0,220,100,.4), transparent);
+  animation: scan 8s linear infinite;
+}
+@keyframes scan { 0% { top:-2px; opacity:0; } 5% { opacity:1; } 95% { opacity:1; } 100% { top:100%; opacity:0; } }
+
+.stage {
+  position: fixed; inset:0; z-index:10;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:24px;
+}
+
+/* marca */
+.top-brand { text-align:center; margin-bottom:32px; animation: fadeDown .8s ease both; }
+@keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+.logo-wrap { position:relative; display:inline-block; margin-bottom:16px; }
+.logo-wrap img {
+  height:80px; width:80px; border-radius:50%; object-fit:cover;
+  border:2px solid rgba(0,200,80,.4);
+  animation: logopulse 3s ease-in-out infinite;
+}
+@keyframes logopulse {
+  0%,100% { filter: drop-shadow(0 0 18px rgba(0,220,100,.4)); }
+  50%      { filter: drop-shadow(0 0 36px rgba(0,220,100,.75)); }
+}
+.ring {
+  position:absolute; top:50%; left:50%; border-radius:50%;
+  border:1.5px solid rgba(0,200,80,.3);
+  transform:translate(-50%,-50%) scale(0);
+  animation:ringout 3s ease-out infinite;
+  width:80px; height:80px;
+}
+.ring:nth-child(2) { animation-delay:1s; }
+.ring:nth-child(3) { animation-delay:2s; }
+@keyframes ringout {
+  0%   { transform:translate(-50%,-50%) scale(.6); opacity:.8; }
+  100% { transform:translate(-50%,-50%) scale(2.4); opacity:0; }
+}
+.brand-name { font-size:2.4rem; font-weight:900; color:#fff; letter-spacing:.06em; text-shadow:0 0 40px rgba(0,200,80,.4); }
+.brand-slogan { font-size:.95rem; color:rgba(255,255,255,.55); letter-spacing:.12em; text-transform:uppercase; margin-top:4px; }
+
+/* card */
+.card {
+  width:min(420px,100%);
+  background:rgba(5,20,10,.72);
+  border:1px solid rgba(0,200,80,.2);
+  border-radius:20px; padding:36px 40px;
+  backdrop-filter:blur(20px) saturate(1.4); -webkit-backdrop-filter:blur(20px) saturate(1.4);
+  box-shadow:0 0 0 1px rgba(0,200,80,.08),0 8px 40px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06);
+  animation:fadeUp .9s ease .2s both;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+.card-title { font-size:1.1rem; font-weight:700; color:#fff; margin-bottom:4px; }
+.card-sub   { font-size:.82rem; color:rgba(255,255,255,.35); margin-bottom:22px; }
+.card-sub span { color:rgba(0,220,100,.8); font-weight:700; }
+
+/* success */
+.alert-success {
+  display:flex; gap:12px; align-items:flex-start;
+  background:rgba(0,180,80,.1); border:1px solid rgba(0,200,80,.3);
+  border-radius:12px; padding:14px 16px; margin-bottom:20px;
+}
+.alert-success i { color:#00cc55; margin-top:2px; flex-shrink:0; }
+.alert-success p { font-size:.85rem; color:rgba(200,255,220,.85); line-height:1.5; }
+.alert-success p strong { color:#7dffb0; }
+
+/* error */
+.alert-error {
+  display:flex; gap:8px; align-items:center;
+  background:rgba(220,50,50,.15); border:1px solid rgba(220,80,80,.3);
+  border-radius:10px; padding:10px 14px; margin-bottom:16px;
+  font-size:.83rem; color:#ff8080;
+}
+
+/* campo */
+.field { margin-bottom:8px; }
+.field label {
+  display:block; font-size:.72rem; font-weight:700;
+  color:rgba(0,220,100,.7); text-transform:uppercase;
+  letter-spacing:.1em; margin-bottom:7px;
+}
+.input-row {
+  display:flex; align-items:center;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
+  border-radius:10px; overflow:hidden; transition:border-color .2s, box-shadow .2s;
+}
+.input-row:focus-within {
+  border-color:rgba(0,200,80,.6);
+  box-shadow:0 0 0 3px rgba(0,180,70,.15), inset 0 0 20px rgba(0,200,80,.04);
+}
+.input-row .icon {
+  width:42px; display:flex; align-items:center; justify-content:center;
+  color:rgba(0,200,80,.5); font-size:.9rem; flex-shrink:0;
+}
+.input-row input {
+  flex:1; background:transparent; border:none; outline:none;
+  color:#fff; font-size:.95rem; padding:12px 14px 12px 0;
+}
+.input-row input::placeholder { color:rgba(255,255,255,.18); }
+.field-hint { font-size:.75rem; color:rgba(255,255,255,.25); margin-top:6px; }
+
+/* botão */
+.btn-login {
+  width:100%; padding:13px; border:none; border-radius:10px;
+  background:linear-gradient(135deg,#00cc55 0%,#006633 100%);
+  color:#fff; font-size:.97rem; font-weight:800; letter-spacing:.05em; cursor:pointer;
+  position:relative; overflow:hidden; margin-top:18px;
+  transition:transform .15s, box-shadow .2s;
+  box-shadow:0 4px 24px rgba(0,180,70,.4);
+}
+.btn-login:hover  { box-shadow:0 6px 32px rgba(0,200,80,.55); transform:translateY(-1px); }
+.btn-login:active { transform:scale(.98); }
+.btn-login::after {
+  content:''; position:absolute; top:-50%; left:-75%; width:50%; height:200%;
+  background:rgba(255,255,255,.18); transform:skewX(-20deg);
+  animation:btnshine 4s ease-in-out infinite 1.5s;
+}
+@keyframes btnshine { 0%,100% { left:-75%; opacity:0; } 45% { left:130%; opacity:1; } }
+
+/* rodapé */
+.footer-links {
+  display:flex; flex-wrap:wrap; justify-content:center; gap:20px;
+  margin-top:20px; padding-top:18px; border-top:1px solid rgba(255,255,255,.07);
+}
+.footer-links a {
+  display:inline-flex; align-items:center; gap:6px;
+  color:rgba(255,255,255,.25); font-size:.78rem; text-decoration:none;
+  transition:color .2s;
+}
+.footer-links a:hover { color:rgba(0,220,100,.8); }
+
+@media (max-width:480px) {
+  .bg { grid-template-columns:repeat(2,1fr); grid-template-rows:repeat(6,1fr); }
+  .brand-name { font-size:1.8rem; }
+  .card { padding:28px 22px; }
+}
+</style>
 </head>
 <body>
-  <div class="page-wrapper">
-    <div class="card" style="max-width:480px;">
 
-      <!-- Logo -->
-      <div class="logo" aria-label="Camim">
-        <svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <text x="0" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="30" font-weight="700" fill="#1a56db">Camim</text>
-        </svg>
-      </div>
+<div class="bg">
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+</div>
+<div class="bg-overlay"></div>
+<div class="bg-grid"></div>
+<div class="scanline"></div>
 
-      <h1 style="font-size:1.25rem;font-weight:700;text-align:center;color:#111827;margin-bottom:8px;">
-        Crie seu <span style="color:#1a56db;">idCamim</span>
-      </h1>
-      <p class="subtitle" style="margin-bottom:28px;">
-        Acesso único para todos os sistemas Camim.<br />
-        Um login, todos os portais.
-      </p>
+<div class="stage">
 
-      <% if (success) { %>
-        <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:16px 18px;margin-bottom:24px;display:flex;gap:12px;align-items:flex-start;">
-          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;" aria-hidden="true">
-            <circle cx="12" cy="12" r="12" fill="#16a34a"/>
-            <path d="M7 12.5l3.5 3.5 6.5-7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <div>
-            <p style="font-weight:600;color:#15803d;margin-bottom:2px;">E-mail enviado!</p>
-            <p style="font-size:0.875rem;color:#166534;">
-              Verifique a caixa de entrada de <strong><%= success %></strong> e clique no link para criar sua senha.
-            </p>
-          </div>
-        </div>
-      <% } %>
-
-      <% if (error) { %>
-        <div class="alert-error">
-          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" style="flex-shrink:0" aria-hidden="true">
-            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-          </svg>
-          <span><%= error %></span>
-        </div>
-      <% } %>
-
-      <% if (!success) { %>
-        <form action="/registrar" method="POST" novalidate>
-          <div class="form-group">
-            <label for="email">Seu e-mail corporativo</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              required
-              placeholder="voce@camim.com.br"
-              autocomplete="email"
-              autofocus
-              class="form-input"
-              value="<%= email || '' %>"
-            />
-            <p style="font-size:0.8rem;color:#6b7280;margin-top:6px;">
-              Somente e-mails de domínios Camim autorizados são aceitos.
-            </p>
-          </div>
-
-          <button type="submit" class="btn-primary" style="margin-top:4px;">
-            Receber link de criação
-          </button>
-        </form>
-      <% } %>
-
+  <div class="top-brand">
+    <div class="logo-wrap">
+      <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+      <img src="https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2021/06/15145129/home.jpg" alt="CAMIM">
     </div>
-
-    <footer class="page-footer">
-      <p>Login Único Camim &mdash; Acesso seguro e centralizado</p>
-      <p style="margin-top:10px;">
-        <a href="/docs" style="display:inline-flex;align-items:center;gap:6px;color:#6b7280;font-size:0.8rem;text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#1a56db'" onmouseout="this.style.color='#6b7280'">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          Documentação para desenvolvedores
-        </a>
-      </p>
-    </footer>
+    <div class="brand-name">IDCamim</div>
+    <div class="brand-slogan">Login Único Camim</div>
   </div>
+
+  <div class="card">
+    <div class="card-title">Crie seu <span style="color:rgba(0,220,100,.9)">idCamim</span></div>
+    <div class="card-sub">Acesso único para todos os sistemas Camim.<br>Um login, todos os portais.</div>
+
+    <% if (success) { %>
+      <div class="alert-success">
+        <i class="fas fa-check-circle fa-lg"></i>
+        <p>E-mail enviado! Verifique a caixa de <strong><%= success %></strong> e clique no link para criar sua senha.</p>
+      </div>
+    <% } %>
+
+    <% if (error) { %>
+      <div class="alert-error">
+        <i class="fas fa-exclamation-circle"></i>
+        <span><%= error %></span>
+      </div>
+    <% } %>
+
+    <% if (!success) { %>
+      <form action="/registrar" method="POST" novalidate>
+        <div class="field">
+          <label for="email">Seu e-mail corporativo</label>
+          <div class="input-row">
+            <span class="icon"><i class="far fa-envelope"></i></span>
+            <input type="email" id="email" name="email"
+              placeholder="voce@camim.com.br"
+              autocomplete="email" autofocus required
+              value="<%= email || '' %>">
+          </div>
+          <p class="field-hint">Somente domínios Camim autorizados são aceitos.</p>
+        </div>
+
+        <button type="submit" class="btn-login">
+          <i class="fas fa-paper-plane" style="margin-right:8px"></i>Receber link de criação
+        </button>
+      </form>
+    <% } %>
+
+    <div class="footer-links">
+      <a href="/docs"><i class="fas fa-book"></i> Documentação para devs</a>
+      <a href="/painel"><i class="fas fa-shield-alt"></i> Painel Admin</a>
+    </div>
+  </div>
+
+</div>
 </body>
 </html>

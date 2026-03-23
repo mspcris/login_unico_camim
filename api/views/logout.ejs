@@ -1,90 +1,225 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="robots" content="noindex, nofollow" />
-  <title>Sair &mdash; Camim</title>
-  <link rel="stylesheet" href="/css/style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Sair — IDCamim</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; font-family: "Segoe UI", system-ui, sans-serif; }
+
+.bg {
+  position: fixed; inset: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  z-index: 0;
+}
+.bg-cell {
+  background-size: cover; background-position: center;
+  animation: kenburns 20s ease-in-out infinite alternate;
+  filter: brightness(.55) saturate(1.1);
+}
+.bg-cell:nth-child(1)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2021/06/15145129/home.jpg'); animation-delay: 0s; }
+.bg-cell:nth-child(2)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/04/30163026/Campo-Grande-e1562878167161.jpg'); animation-delay: -3s; }
+.bg-cell:nth-child(3)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2022/03/09151823/cg2fachada-scaled.jpg'); animation-delay: -6s; }
+.bg-cell:nth-child(4)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/07/11123612/BANGU-1-as-Smart-Object-1-copy.jpg'); animation-delay: -9s; }
+.bg-cell:nth-child(5)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2020/10/19144653/del_castilho.jpg'); animation-delay: -2s; }
+.bg-cell:nth-child(6)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/04/30162346/jpa-e1562878253339.jpg'); animation-delay: -5s; }
+.bg-cell:nth-child(7)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2020/10/19144328/Recepcao-Del-Castilho.jpg'); animation-delay: -8s; }
+.bg-cell:nth-child(8)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2024/04/05115830/madureira.jpg'); animation-delay: -11s; }
+.bg-cell:nth-child(9)  { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2022/03/09152145/cpnhofachada.jpg'); animation-delay: -4s; }
+.bg-cell:nth-child(10) { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2020/02/21140942/nillopolis2102.jpg'); animation-delay: -7s; }
+.bg-cell:nth-child(11) { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/07/11130213/REALENGO-1-as-Smart-Object-1-copy.jpg'); animation-delay: -1s; }
+.bg-cell:nth-child(12) { background-image: url('https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2019/04/30162920/NI-e1562878495907.jpg'); animation-delay: -10s; }
+@keyframes kenburns {
+  0%   { transform: scale(1) translate(0,0); }
+  100% { transform: scale(1.12) translate(-2%,-2%); }
+}
+.bg-overlay {
+  position: fixed; inset: 0; z-index: 1;
+  background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(0,20,10,.45) 0%, rgba(0,10,5,.82) 100%);
+}
+.bg-grid {
+  position: fixed; inset: 0; z-index: 2;
+  background-image:
+    linear-gradient(rgba(0,180,80,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,180,80,.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  animation: gridpulse 6s ease-in-out infinite;
+}
+@keyframes gridpulse { 0%,100% { opacity:.6; } 50% { opacity:1; } }
+.scanline {
+  position: fixed; left:0; right:0; height:2px; z-index:3;
+  background: linear-gradient(90deg, transparent, rgba(0,220,100,.4), transparent);
+  animation: scan 8s linear infinite;
+}
+@keyframes scan { 0% { top:-2px; opacity:0; } 5% { opacity:1; } 95% { opacity:1; } 100% { top:100%; opacity:0; } }
+
+.stage {
+  position: fixed; inset:0; z-index:10;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:24px;
+}
+
+.top-brand { text-align:center; margin-bottom:28px; animation: fadeDown .8s ease both; }
+@keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+.logo-wrap { position:relative; display:inline-block; margin-bottom:12px; }
+.logo-wrap img {
+  height:64px; width:64px; border-radius:50%; object-fit:cover;
+  border:2px solid rgba(0,200,80,.4);
+  animation: logopulse 3s ease-in-out infinite;
+}
+@keyframes logopulse {
+  0%,100% { filter: drop-shadow(0 0 18px rgba(0,220,100,.4)); }
+  50%      { filter: drop-shadow(0 0 36px rgba(0,220,100,.75)); }
+}
+.ring {
+  position:absolute; top:50%; left:50%; border-radius:50%;
+  border:1.5px solid rgba(0,200,80,.3);
+  transform:translate(-50%,-50%) scale(0);
+  animation:ringout 3s ease-out infinite;
+  width:64px; height:64px;
+}
+.ring:nth-child(2) { animation-delay:1s; }
+.ring:nth-child(3) { animation-delay:2s; }
+@keyframes ringout {
+  0%   { transform:translate(-50%,-50%) scale(.6); opacity:.8; }
+  100% { transform:translate(-50%,-50%) scale(2.4); opacity:0; }
+}
+.brand-name { font-size:2rem; font-weight:900; color:#fff; letter-spacing:.06em; text-shadow:0 0 40px rgba(0,200,80,.4); }
+.brand-slogan { font-size:.85rem; color:rgba(255,255,255,.55); letter-spacing:.12em; text-transform:uppercase; margin-top:4px; }
+
+.card {
+  width:min(420px,100%);
+  background:rgba(5,20,10,.72);
+  border:1px solid rgba(0,200,80,.2);
+  border-radius:20px; padding:36px 40px;
+  backdrop-filter:blur(20px) saturate(1.4); -webkit-backdrop-filter:blur(20px) saturate(1.4);
+  box-shadow:0 0 0 1px rgba(0,200,80,.08),0 8px 40px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06);
+  animation:fadeUp .9s ease .2s both;
+  text-align:center;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+
+.logout-icon {
+  width:72px; height:72px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 20px;
+  animation: iconpop .6s cubic-bezier(.34,1.56,.64,1) .4s both;
+}
+@keyframes iconpop { from { opacity:0; transform:scale(.5); } to { opacity:1; transform:scale(1); } }
+.logout-icon.success { background:rgba(0,180,80,.12); border:2px solid rgba(0,200,80,.3); }
+.logout-icon.success i { color:#00cc55; font-size:1.8rem; }
+.logout-icon.warn { background:rgba(200,140,0,.1); border:2px solid rgba(200,160,0,.25); }
+.logout-icon.warn i { color:#f0a500; font-size:1.8rem; }
+
+.logout-title { font-size:1.2rem; font-weight:800; color:#fff; margin-bottom:10px; }
+.logout-body  { font-size:.88rem; color:rgba(255,255,255,.45); line-height:1.7; margin-bottom:24px; }
+
+.btn-danger {
+  width:100%; padding:12px; border:none; border-radius:10px;
+  background:linear-gradient(135deg,#cc2200 0%,#7a1000 100%);
+  color:#fff; font-size:.95rem; font-weight:800; letter-spacing:.05em; cursor:pointer;
+  transition:transform .15s, box-shadow .2s;
+  box-shadow:0 4px 24px rgba(180,30,0,.4);
+  margin-bottom:10px;
+}
+.btn-danger:hover  { box-shadow:0 6px 32px rgba(220,50,0,.55); transform:translateY(-1px); }
+.btn-danger:active { transform:scale(.98); }
+
+.btn-cancel {
+  width:100%; padding:11px; border:1px solid rgba(255,255,255,.12); border-radius:10px;
+  background:rgba(255,255,255,.05);
+  color:rgba(255,255,255,.45); font-size:.9rem; font-weight:600; cursor:pointer;
+  transition:background .2s, color .2s;
+}
+.btn-cancel:hover { background:rgba(255,255,255,.09); color:rgba(255,255,255,.7); }
+
+@media (max-width:480px) {
+  .bg { grid-template-columns:repeat(2,1fr); grid-template-rows:repeat(6,1fr); }
+  .brand-name { font-size:1.6rem; }
+  .card { padding:28px 22px; }
+}
+</style>
 </head>
 <body>
-  <div class="page-wrapper">
-    <div class="card">
 
-      <!-- Logo -->
-      <div class="logo" aria-label="Camim">
-        <svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <text x="0" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="30" font-weight="700" fill="#1a56db">Camim</text>
-        </svg>
+<div class="bg">
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+  <div class="bg-cell"></div><div class="bg-cell"></div>
+</div>
+<div class="bg-overlay"></div>
+<div class="bg-grid"></div>
+<div class="scanline"></div>
+
+<div class="stage">
+
+  <div class="top-brand">
+    <div class="logo-wrap">
+      <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+      <img src="https://camim-site.s3.sa-east-1.amazonaws.com/wp-content/uploads/2021/06/15145129/home.jpg" alt="CAMIM">
+    </div>
+    <div class="brand-name">IDCamim</div>
+    <div class="brand-slogan">Login Único Camim</div>
+  </div>
+
+  <div class="card">
+
+    <% if (typeof loggedOut !== 'undefined' && loggedOut) { %>
+
+      <div class="logout-icon success">
+        <i class="fas fa-check"></i>
       </div>
+      <div class="logout-title">Você foi desconectado</div>
+      <p class="logout-body">
+        Sua sessão foi encerrada com segurança.<br>Você pode fechar esta janela.
+      </p>
 
-      <% if (typeof loggedOut !== 'undefined' && loggedOut) { %>
+    <% } else { %>
 
-        <!-- Already logged out state -->
-        <div class="logout-icon" aria-hidden="true">
-          <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="28" cy="28" r="28" fill="#f0fdf4"/>
-            <path d="M23 28l4 4 8-8" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
+      <div class="logout-icon warn">
+        <i class="fas fa-sign-out-alt"></i>
+      </div>
+      <div class="logout-title">Sair da sua conta?</div>
+      <p class="logout-body">
+        Você está prestes a encerrar sua sessão no Login Único Camim.<br>
+        Isso encerrará sua sessão em todos os sistemas conectados.
+      </p>
 
-        <h1 class="logout-title">Você foi desconectado</h1>
-        <p class="logout-subtitle">
-          Sua sessão foi encerrada com segurança.<br />
-          Você pode fechar esta janela.
-        </p>
-
-      <% } else { %>
-
-        <!-- Confirmation state -->
-        <div class="logout-icon" aria-hidden="true">
-          <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="28" cy="28" r="28" fill="#fefce8"/>
-            <path d="M28 20v8" stroke="#ca8a04" stroke-width="2.5" stroke-linecap="round"/>
-            <circle cx="28" cy="34" r="1.5" fill="#ca8a04"/>
-          </svg>
-        </div>
-
-        <h1 class="logout-title">Sair da sua conta?</h1>
-        <p class="logout-subtitle">
-          Você está prestes a encerrar sua sessão no Login Único Camim.<br />
-          Isso encerrará sua sessão em todos os sistemas conectados.
-        </p>
-
-        <% if (typeof uid !== 'undefined' && uid) { %>
-          <form action="/session/end/confirm" method="POST">
-            <% if (typeof xsrf !== 'undefined') { %>
-              <input type="hidden" name="xsrf" value="<%= xsrf %>" />
-            <% } %>
-            <% if (typeof logout !== 'undefined') { %>
-              <input type="hidden" name="logout" value="yes" />
-            <% } %>
-            <button type="submit" class="btn-danger">
-              Sair de todas as sessões
-            </button>
-          </form>
-          <form action="/session/end/confirm" method="POST" style="margin-top: 12px">
-            <% if (typeof xsrf !== 'undefined') { %>
-              <input type="hidden" name="xsrf" value="<%= xsrf %>" />
-            <% } %>
-            <button type="submit" class="btn-secondary">
-              Cancelar
-            </button>
-          </form>
-        <% } else { %>
-          <button type="button" class="btn-secondary" onclick="window.history.back()">
-            Cancelar
+      <% if (typeof uid !== 'undefined' && uid) { %>
+        <form action="/session/end/confirm" method="POST">
+          <% if (typeof xsrf !== 'undefined') { %>
+            <input type="hidden" name="xsrf" value="<%= xsrf %>" />
+          <% } %>
+          <% if (typeof logout !== 'undefined') { %>
+            <input type="hidden" name="logout" value="yes" />
+          <% } %>
+          <button type="submit" class="btn-danger">
+            <i class="fas fa-sign-out-alt" style="margin-right:8px"></i>Sair de todas as sessões
           </button>
-        <% } %>
-
+        </form>
+        <form action="/session/end/confirm" method="POST">
+          <% if (typeof xsrf !== 'undefined') { %>
+            <input type="hidden" name="xsrf" value="<%= xsrf %>" />
+          <% } %>
+          <button type="submit" class="btn-cancel">Cancelar</button>
+        </form>
+      <% } else { %>
+        <button type="button" class="btn-cancel" onclick="window.history.back()">Cancelar</button>
       <% } %>
 
-    </div>
+    <% } %>
 
-    <!-- Footer -->
-    <footer class="page-footer">
-      <p>Login Único Camim &mdash; Acesso seguro e centralizado</p>
-    </footer>
   </div>
+
+</div>
 </body>
 </html>
