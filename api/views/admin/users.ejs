@@ -16,13 +16,9 @@
       <span></span><span></span><span></span>
     </button>
   </div>
-
-  <!-- Sidebar overlay -->
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
   <div class="admin-layout">
-
-    <!-- Sidebar -->
     <aside class="admin-sidebar" id="admin-sidebar">
       <div class="sidebar-brand">
         <span class="sidebar-brand-name">Camim</span>
@@ -50,7 +46,6 @@
       </div>
     </aside>
 
-    <!-- Main -->
     <main class="admin-main">
       <div class="admin-header">
         <h1>Usuários</h1>
@@ -94,9 +89,7 @@
           </thead>
           <tbody>
             <% if (users.length === 0) { %>
-              <tr>
-                <td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">Nenhum usuário encontrado.</td>
-              </tr>
+              <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">Nenhum usuário encontrado.</td></tr>
             <% } %>
             <% users.forEach(function(u) { %>
               <tr>
@@ -125,11 +118,14 @@
                 </td>
                 <td class="td-actions">
                   <button type="button" class="btn-sm btn-sm-secondary"
-                    onclick="abrirEditarUsuario('<%= u.id %>','<%= (u.name||'').replace(/'/g,\"\\\\'\"  ).replace(/\"/g,'&quot;') %>','<%= u.email.replace(/'/g,\"\\\\'\" ) %>',<%= u.is_admin ? 'true' : 'false' %>)">
-                    Editar
-                  </button>
+                    data-id="<%= u.id %>"
+                    data-name="<%= u.name || '' %>"
+                    data-email="<%= u.email %>"
+                    data-admin="<%= u.is_admin ? '1' : '0' %>"
+                    onclick="abrirEditarUsuario(this)">Editar</button>
                   <% if (u.active) { %>
-                    <form action="/painel/usuarios/<%= u.id %>/desativar" method="POST" style="display:inline;" onsubmit="return confirm('Desativar este usuário?')">
+                    <form action="/painel/usuarios/<%= u.id %>/desativar" method="POST" style="display:inline;"
+                      onsubmit="return confirm('Desativar este usuário?')">
                       <button type="submit" class="btn-sm btn-sm-danger">Desativar</button>
                     </form>
                   <% } else { %>
@@ -143,7 +139,8 @@
                     </form>
                   <% } %>
                   <form action="/painel/usuarios/<%= u.id %>/excluir" method="POST" style="display:inline;"
-                    onsubmit="return confirm('Excluir permanentemente o usuário <%= u.email.replace(/'/g,\"\\\\'\" ) %>? Esta ação não pode ser desfeita.')">
+                    data-email="<%= u.email %>"
+                    onsubmit="return confirm('Excluir permanentemente ' + this.dataset.email + '? Não pode ser desfeito.')">
                     <button type="submit" class="btn-sm" style="background:#7f1d1d;color:#fff;">Excluir</button>
                   </form>
                 </td>
@@ -187,19 +184,16 @@
       document.getElementById('admin-sidebar').classList.toggle('open');
       document.getElementById('sidebar-overlay').classList.toggle('open');
     }
-
     function fecharModal(id) {
       document.getElementById(id).classList.remove('open');
     }
-
-    function abrirEditarUsuario(id, nome, email, isAdmin) {
-      document.getElementById('eu-name').value  = nome;
-      document.getElementById('eu-email').value = email;
-      document.getElementById('eu-admin').checked = isAdmin;
-      document.getElementById('form-usuario').action = '/painel/usuarios/' + id + '/editar';
+    function abrirEditarUsuario(btn) {
+      document.getElementById('eu-name').value    = btn.dataset.name;
+      document.getElementById('eu-email').value   = btn.dataset.email;
+      document.getElementById('eu-admin').checked = btn.dataset.admin === '1';
+      document.getElementById('form-usuario').action = '/painel/usuarios/' + btn.dataset.id + '/editar';
       document.getElementById('modal-usuario').classList.add('open');
     }
-
     document.getElementById('modal-usuario').addEventListener('click', function(e) {
       if (e.target === this) fecharModal('modal-usuario');
     });

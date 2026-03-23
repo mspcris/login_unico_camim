@@ -16,13 +16,9 @@
       <span></span><span></span><span></span>
     </button>
   </div>
-
-  <!-- Sidebar overlay -->
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
   <div class="admin-layout">
-
-    <!-- Sidebar -->
     <aside class="admin-sidebar" id="admin-sidebar">
       <div class="sidebar-brand">
         <span class="sidebar-brand-name">Camim</span>
@@ -50,7 +46,6 @@
       </div>
     </aside>
 
-    <!-- Main -->
     <main class="admin-main">
       <div class="admin-header">
         <h1>Domínios Permitidos</h1>
@@ -91,9 +86,7 @@
           </thead>
           <tbody>
             <% if (domains.length === 0) { %>
-              <tr>
-                <td colspan="3" style="text-align:center;color:var(--text-muted);padding:32px;">Nenhum domínio cadastrado.</td>
-              </tr>
+              <tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:32px;">Nenhum domínio cadastrado.</td></tr>
             <% } %>
             <% domains.forEach(function(d) { %>
               <tr>
@@ -105,11 +98,11 @@
                 </td>
                 <td class="td-actions">
                   <button type="button" class="btn-sm btn-sm-secondary"
-                    onclick="abrirRenomear('<%= d.domain.replace(/'/g,\"\\\\'\" ) %>')">
-                    Renomear
-                  </button>
+                    data-domain="<%= d.domain %>"
+                    onclick="abrirRenomear(this)">Renomear</button>
                   <form action="/painel/dominios/<%= encodeURIComponent(d.domain) %>/remover" method="POST" style="display:inline;"
-                    onsubmit="return confirm('Remover o domínio <%= d.domain.replace(/'/g,\"\\\\'\" ) %>?')">
+                    data-domain="<%= d.domain %>"
+                    onsubmit="return confirm('Remover o domínio ' + this.dataset.domain + '?')">
                     <button type="submit" class="btn-sm btn-sm-danger">Remover</button>
                   </form>
                 </td>
@@ -121,7 +114,7 @@
     </main>
   </div>
 
-  <!-- Modal Renomear Domínio -->
+  <!-- Modal Renomear -->
   <div class="modal-overlay" id="modal-dominio">
     <div class="modal-box">
       <div class="modal-title">Renomear domínio</div>
@@ -147,19 +140,17 @@
       document.getElementById('admin-sidebar').classList.toggle('open');
       document.getElementById('sidebar-overlay').classList.toggle('open');
     }
-
     function fecharModal(id) {
       document.getElementById(id).classList.remove('open');
     }
-
-    function abrirRenomear(dominio) {
-      document.getElementById('rd-atual').value = dominio;
-      document.getElementById('rd-novo').value  = dominio;
-      document.getElementById('form-dominio').action = '/painel/dominios/' + encodeURIComponent(dominio) + '/renomear';
+    function abrirRenomear(btn) {
+      const d = btn.dataset.domain;
+      document.getElementById('rd-atual').value = d;
+      document.getElementById('rd-novo').value  = d;
+      document.getElementById('form-dominio').action = '/painel/dominios/' + encodeURIComponent(d) + '/renomear';
       document.getElementById('modal-dominio').classList.add('open');
       setTimeout(() => document.getElementById('rd-novo').focus(), 80);
     }
-
     document.getElementById('modal-dominio').addEventListener('click', function(e) {
       if (e.target === this) fecharModal('modal-dominio');
     });
