@@ -204,7 +204,7 @@ router.post('/painel/usuarios/:id/reenviar', requireAdmin, parseForm, async (req
 router.get('/painel/sistemas', requireAdmin, async (req, res) => {
   try {
     const { rows } = await getPool().query(
-      `SELECT client_id, client_name, redirect_uris, active, description, created_at
+      `SELECT client_id, client_name, redirect_uris, post_logout_redirect_uris, scope, active, description, created_at
        FROM clients ORDER BY created_at DESC`
     );
     return res.render('admin/sistemas', {
@@ -224,7 +224,7 @@ router.post('/painel/sistemas', requireAdmin, parseForm, async (req, res) => {
   const { client_name, redirect_uri, post_logout_uri, description } = req.body;
 
   const renderError = async (msg) => {
-    const { rows } = await getPool().query(`SELECT client_id, client_name, redirect_uris, active, description, created_at FROM clients ORDER BY created_at DESC`);
+    const { rows } = await getPool().query(`SELECT client_id, client_name, redirect_uris, post_logout_redirect_uris, scope, active, description, created_at FROM clients ORDER BY created_at DESC`);
     return res.render('admin/sistemas', { clients: rows, admin: getAdmin(req), newClient: null, error: msg, issuer: process.env.ISSUER || 'https://auth.camim.com.br' });
   };
 
@@ -244,7 +244,7 @@ router.post('/painel/sistemas', requireAdmin, parseForm, async (req, res) => {
       [clientId, clientSecret, client_name.trim(), [redirect_uri], post_logout_uri ? [post_logout_uri] : [], description || null]
     );
 
-    const { rows } = await db.query(`SELECT client_id, client_name, redirect_uris, active, description, created_at FROM clients ORDER BY created_at DESC`);
+    const { rows } = await db.query(`SELECT client_id, client_name, redirect_uris, post_logout_redirect_uris, scope, active, description, created_at FROM clients ORDER BY created_at DESC`);
     return res.render('admin/sistemas', {
       clients: rows,
       admin: getAdmin(req),

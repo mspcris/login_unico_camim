@@ -119,6 +119,8 @@
                 <th>Nome</th>
                 <th>client_id</th>
                 <th>Redirect URI</th>
+                <th>URL pós-logout</th>
+                <th>Scope</th>
                 <th>Status</th>
                 <th>Criado em</th>
                 <th>Ações</th>
@@ -127,9 +129,22 @@
             <tbody>
               <% clients.forEach(c => { %>
                 <tr>
-                  <td><strong><%= c.client_name %></strong><% if (c.description) { %><br><span style="font-size:0.8rem;color:#6b7280;"><%= c.description %></span><% } %></td>
+                  <td>
+                    <strong><%= c.client_name %></strong>
+                    <% if (c.description) { %><br><span style="font-size:0.8rem;color:#6b7280;"><%= c.description %></span><% } %>
+                  </td>
                   <td><code style="font-size:0.8rem;background:#f3f4f6;padding:2px 6px;border-radius:4px;"><%= c.client_id %></code></td>
-                  <td style="font-size:0.85rem;max-width:220px;word-break:break-all;"><%= (c.redirect_uris || []).join(', ') %></td>
+                  <td style="font-size:0.85rem;max-width:200px;word-break:break-all;">
+                    <% (c.redirect_uris || []).forEach(function(u) { %><div><%= u %></div><% }); %>
+                    <% if (!c.redirect_uris || c.redirect_uris.length === 0) { %><span style="color:#9ca3af;">—</span><% } %>
+                  </td>
+                  <td style="font-size:0.85rem;max-width:180px;word-break:break-all;">
+                    <% (c.post_logout_redirect_uris || []).forEach(function(u) { %><div><%= u %></div><% }); %>
+                    <% if (!c.post_logout_redirect_uris || c.post_logout_redirect_uris.length === 0) { %><span style="color:#9ca3af;">—</span><% } %>
+                  </td>
+                  <td style="font-size:0.8rem;color:#374151;white-space:nowrap;">
+                    <%= c.scope || '—' %>
+                  </td>
                   <td>
                     <% if (c.active) { %>
                       <span class="badge badge-active">Ativo</span>
