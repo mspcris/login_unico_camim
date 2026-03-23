@@ -53,13 +53,16 @@ async function main() {
     app.use(express.static(path.join(__dirname, '..', 'public')));
 
     // Session middleware (before routes)
+    // secure: false because SSL is terminated at nginx — cookie is safe in transit
     app.use(session({
+      name: 'camim_admin_sid',
       secret: process.env.SESSION_SECRET || 'camim-session-secret-fallback-change-in-production',
       resave: false,
       saveUninitialized: false,
       cookie: {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: false,
+        sameSite: 'lax',
         maxAge: 8 * 60 * 60 * 1000, // 8 hours
       },
     }));
