@@ -38,9 +38,6 @@ function createProvider(jwks) {
     // JSON Web Key Set for signing tokens (EC P-256)
     jwks,
 
-    // Trust the X-Forwarded-* headers from nginx reverse proxy
-    proxy: true,
-
     // Cookie configuration
     cookies: cookieConfig,
 
@@ -121,6 +118,12 @@ function createProvider(jwks) {
   };
 
   const provider = new Provider(issuer, config);
+
+  // Trust X-Forwarded-Proto from nginx reverse proxy so that discovery
+  // document URLs are built with https:// instead of http://.
+  // NOTE: proxy must be set as a property on the provider instance,
+  // not in the config object — the config key is ignored in oidc-provider v7.
+  provider.proxy = true;
 
   // Log provider errors in development
   if (process.env.NODE_ENV !== 'production') {
