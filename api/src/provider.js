@@ -64,7 +64,17 @@ function createProvider(jwks) {
       revocation: { enabled: true },
 
       // RP-initiated logout (GET /session/end)
-      rpInitiatedLogout: { enabled: true },
+      rpInitiatedLogout: {
+        enabled: true,
+        // Custom success page — replaces the built-in white "Sign-out Success" page
+        async postLogoutSuccessSource(ctx) {
+          const ejs  = require('ejs');
+          const path = require('path');
+          const view = path.join(__dirname, '../views/logout.ejs');
+          ctx.type = 'text/html';
+          ctx.body  = await ejs.renderFile(view, { loggedOut: true, uid: null, xsrf: null, logout: null });
+        },
+      },
 
       // Userinfo endpoint (GET /me)
       userinfo: { enabled: true },
