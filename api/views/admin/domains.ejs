@@ -8,60 +8,78 @@
   <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
+
+  <!-- Mobile top bar -->
+  <div class="topbar">
+    <div class="topbar-brand">Camim <span class="topbar-badge">Admin</span></div>
+    <button class="topbar-hamburger" onclick="toggleSidebar()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <!-- Sidebar overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
   <div class="admin-layout">
 
     <!-- Sidebar -->
-    <aside class="admin-sidebar">
-      <div class="admin-sidebar-logo">
-        <svg width="90" height="30" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <text x="0" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="30" font-weight="700" fill="#ffffff">Camim</text>
-        </svg>
-        <span>Admin</span>
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="sidebar-brand">
+        <span class="sidebar-brand-name">Camim</span>
+        <span class="sidebar-brand-badge">Admin</span>
       </div>
-      <nav>
-        <a href="/painel/usuarios">Usuários</a>
-        <a href="/painel/dominios" class="active">Domínios</a>
-        <a href="/painel/sistemas">Sistemas</a>
-        <a href="/painel/logout">Sair</a>
+      <nav class="sidebar-nav">
+        <a href="/painel/usuarios">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Usuários
+        </a>
+        <a href="/painel/dominios" class="active">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Domínios
+        </a>
+        <a href="/painel/sistemas">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Sistemas
+        </a>
       </nav>
+      <div class="sidebar-footer">
+        <a href="/painel/logout" class="sidebar-logout">
+          <svg width="17" height="17" fill="none" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Sair
+        </a>
+      </div>
     </aside>
 
-    <!-- Main content -->
+    <!-- Main -->
     <main class="admin-main">
       <div class="admin-header">
         <h1>Domínios Permitidos</h1>
-        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 4px;">
-          Apenas e-mails destes domínios podem receber convites de ativação
-        </p>
+        <p>Apenas e-mails destes domínios podem receber convites de ativação.</p>
       </div>
 
-      <!-- Flash messages -->
       <% if (success) { %>
-        <div class="flash-success"><%= success %></div>
+        <div class="flash-success">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <%= success %>
+        </div>
       <% } %>
       <% if (error) { %>
-        <div class="flash-error"><%= error %></div>
+        <div class="flash-error">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <%= error %>
+        </div>
       <% } %>
 
-      <!-- Add domain form -->
-      <div class="table-container" style="margin-bottom: 24px; padding: 20px 24px;">
-        <h2 style="font-size: 1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 14px;">Adicionar domínio</h2>
+      <!-- Adicionar -->
+      <div class="table-container" style="margin-bottom:24px;padding:20px 24px;">
+        <h2 style="font-size:1rem;font-weight:600;color:var(--text-primary);margin-bottom:14px;">Adicionar domínio</h2>
         <form action="/painel/dominios" method="POST" class="form-inline">
-          <input
-            type="text"
-            name="domain"
-            required
-            placeholder="exemplo.com.br"
-            class="form-input"
-            style="margin-bottom: 0;"
-          />
-          <button type="submit" class="btn-primary" style="width: auto; margin-top: 0; white-space: nowrap;">
-            Adicionar
-          </button>
+          <input type="text" name="domain" required placeholder="exemplo.com.br" class="form-input" style="margin-bottom:0;" />
+          <button type="submit" class="btn-primary" style="width:auto;margin-top:0;white-space:nowrap;">Adicionar</button>
         </form>
       </div>
 
-      <!-- Domains table -->
+      <!-- Tabela -->
       <div class="table-container">
         <table>
           <thead>
@@ -74,22 +92,25 @@
           <tbody>
             <% if (domains.length === 0) { %>
               <tr>
-                <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 32px;">
-                  Nenhum domínio cadastrado.
-                </td>
+                <td colspan="3" style="text-align:center;color:var(--text-muted);padding:32px;">Nenhum domínio cadastrado.</td>
               </tr>
             <% } %>
             <% domains.forEach(function(d) { %>
               <tr>
-                <td style="font-weight: 500;"><%= d.domain %></td>
-                <td style="font-size: 0.8125rem; color: var(--text-secondary);">
+                <td data-label="Domínio">
+                  <code style="font-size:0.875rem;background:#f3f4f6;padding:2px 8px;border-radius:4px;"><%= d.domain %></code>
+                </td>
+                <td data-label="Adicionado em" style="font-size:0.8125rem;color:var(--text-secondary);white-space:nowrap;">
                   <%= new Date(d.created_at).toLocaleDateString('pt-BR') %>
                 </td>
-                <td>
-                  <form action="/painel/dominios/<%= encodeURIComponent(d.domain) %>/remover" method="POST" style="display:inline;">
-                    <button type="submit" class="btn-sm btn-sm-danger" onclick="return confirm('Remover o domínio <%= d.domain %>?')">
-                      Remover
-                    </button>
+                <td class="td-actions">
+                  <button type="button" class="btn-sm btn-sm-secondary"
+                    onclick="abrirRenomear('<%= d.domain.replace(/'/g,\"\\\\'\" ) %>')">
+                    Renomear
+                  </button>
+                  <form action="/painel/dominios/<%= encodeURIComponent(d.domain) %>/remover" method="POST" style="display:inline;"
+                    onsubmit="return confirm('Remover o domínio <%= d.domain.replace(/'/g,\"\\\\'\" ) %>?')">
+                    <button type="submit" class="btn-sm btn-sm-danger">Remover</button>
                   </form>
                 </td>
               </tr>
@@ -98,7 +119,50 @@
         </table>
       </div>
     </main>
-
   </div>
+
+  <!-- Modal Renomear Domínio -->
+  <div class="modal-overlay" id="modal-dominio">
+    <div class="modal-box">
+      <div class="modal-title">Renomear domínio</div>
+      <form id="form-dominio" method="POST">
+        <div class="modal-field">
+          <label>Domínio atual</label>
+          <input type="text" id="rd-atual" readonly class="form-input" style="background:#f9fafb;color:var(--text-secondary);" />
+        </div>
+        <div class="modal-field">
+          <label>Novo domínio</label>
+          <input type="text" id="rd-novo" name="new_domain" required placeholder="novo.exemplo.com.br" class="form-input" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-modal-cancel" onclick="fecharModal('modal-dominio')">Cancelar</button>
+          <button type="submit" class="btn-primary" style="width:auto;margin:0;padding:9px 22px;">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('admin-sidebar').classList.toggle('open');
+      document.getElementById('sidebar-overlay').classList.toggle('open');
+    }
+
+    function fecharModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+
+    function abrirRenomear(dominio) {
+      document.getElementById('rd-atual').value = dominio;
+      document.getElementById('rd-novo').value  = dominio;
+      document.getElementById('form-dominio').action = '/painel/dominios/' + encodeURIComponent(dominio) + '/renomear';
+      document.getElementById('modal-dominio').classList.add('open');
+      setTimeout(() => document.getElementById('rd-novo').focus(), 80);
+    }
+
+    document.getElementById('modal-dominio').addEventListener('click', function(e) {
+      if (e.target === this) fecharModal('modal-dominio');
+    });
+  </script>
 </body>
 </html>

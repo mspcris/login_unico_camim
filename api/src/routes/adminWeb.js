@@ -174,6 +174,44 @@ router.post('/painel/usuarios/:id/ativar', requireAdmin, parseForm, async (req, 
   }
 });
 
+router.post('/painel/usuarios/:id/editar', requireAdmin, parseForm, async (req, res) => {
+  const { name, email, is_admin } = req.body;
+
+  if (!email || typeof email !== 'string')
+    return redirectFlash(res, '/painel/usuarios', 'error', 'E-mail é obrigatório.');
+
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail))
+    return redirectFlash(res, '/painel/usuarios', 'error', 'Formato de e-mail inválido.');
+
+  try {
+    await getPool().query(
+      'UPDATE users SET name = $1, email = $2, is_admin = $3, updated_at = NOW() WHERE id = $4',
+      [name?.trim() || null, normalizedEmail, is_admin === '1', req.params.id]
+    );
+    return redirectFlash(res, '/painel/usuarios', 'success', 'Usuário atualizado com sucesso.');
+  } catch (err) {
+    if (err.code === '23505')
+      return redirectFlash(res, '/painel/usuarios', 'error', 'Já existe um usuário com este e-mail.');
+    console.error('[AdminWeb] editar usuario error:', err.message);
+    return redirectFlash(res, '/painel/usuarios', 'error', 'Erro interno ao atualizar usuário.');
+  }
+});
+
+router.post('/painel/usuarios/:id/excluir', requireAdmin, parseForm, async (req, res) => {
+  try {
+    const db = getPool();
+    await db.query('DELETE FROM activation_tokens WHERE user_id = $1', [req.params.id]);
+    const { rowCount } = await db.query('DELETE FROM users WHERE id = $1', [req.params.id]);
+    if (rowCount === 0)
+      return redirectFlash(res, '/painel/usuarios', 'error', 'Usuário não encontrado.');
+    return redirectFlash(res, '/painel/usuarios', 'success', 'Usuário excluído permanentemente.');
+  } catch (err) {
+    console.error('[AdminWeb] excluir usuario error:', err.message);
+    return redirectFlash(res, '/painel/usuarios', 'error', 'Erro interno ao excluir usuário.');
+  }
+});
+
 router.post('/painel/usuarios/:id/reenviar', requireAdmin, parseForm, async (req, res) => {
   try {
     const db = getPool();
@@ -212,6 +250,7 @@ router.get('/painel/sistemas', requireAdmin, async (req, res) => {
       admin: getAdmin(req),
       newClient: null,
       error: req.query.error || null,
+      success: req.query.success || null,
       issuer: process.env.ISSUER || 'https://auth.camim.com.br',
     });
   } catch (err) {
@@ -225,7 +264,7 @@ router.post('/painel/sistemas', requireAdmin, parseForm, async (req, res) => {
 
   const renderError = async (msg) => {
     const { rows } = await getPool().query(`SELECT client_id, client_name, redirect_uris, post_logout_redirect_uris, scope, active, description, created_at FROM clients ORDER BY created_at DESC`);
-    return res.render('admin/sistemas', { clients: rows, admin: getAdmin(req), newClient: null, error: msg, issuer: process.env.ISSUER || 'https://auth.camim.com.br' });
+    return res.render('admin/sistemas', { clients: rows, admin: getAdmin(req), newClient: null, error: msg, success: null, issuer: process.env.ISSUER || 'https://auth.camim.com.br' });
   };
 
   if (!client_name || !redirect_uri) return renderError('Nome e URL de callback são obrigatórios.');
@@ -250,6 +289,7 @@ router.post('/painel/sistemas', requireAdmin, parseForm, async (req, res) => {
       admin: getAdmin(req),
       newClient: { client_id: clientId, client_secret: clientSecret },
       error: null,
+      success: null,
       issuer: process.env.ISSUER || 'https://auth.camim.com.br',
     });
   } catch (err) {
@@ -273,6 +313,49 @@ router.post('/painel/sistemas/:clientId/ativar', requireAdmin, parseForm, async 
     return redirectFlash(res, '/painel/sistemas', 'success', 'Sistema ativado.');
   } catch (err) {
     return redirectFlash(res, '/painel/sistemas', 'error', 'Erro ao ativar sistema.');
+  }
+});
+
+router.post('/painel/sistemas/:clientId/editar', requireAdmin, parseForm, async (req, res) => {
+  const { client_name, redirect_uris_raw, post_logout_uris_raw, description } = req.body;
+
+  if (!client_name || !client_name.trim())
+    return redirectFlash(res, '/painel/sistemas', 'error', 'Nome do sistema é obrigatório.');
+
+  const redirectUris = (redirect_uris_raw || '').split('\n').map(s => s.trim()).filter(Boolean);
+  const logoutUris   = (post_logout_uris_raw || '').split('\n').map(s => s.trim()).filter(Boolean);
+
+  if (redirectUris.length === 0)
+    return redirectFlash(res, '/painel/sistemas', 'error', 'Ao menos uma URL de callback é obrigatória.');
+
+  for (const u of [...redirectUris, ...logoutUris]) {
+    try { new URL(u); } catch {
+      return redirectFlash(res, '/painel/sistemas', 'error', `URL inválida: ${u}`);
+    }
+  }
+
+  try {
+    await getPool().query(
+      `UPDATE clients SET client_name = $1, redirect_uris = $2, post_logout_redirect_uris = $3, description = $4
+       WHERE client_id = $5`,
+      [client_name.trim(), redirectUris, logoutUris, description?.trim() || null, req.params.clientId]
+    );
+    return redirectFlash(res, '/painel/sistemas', 'success', 'Sistema atualizado com sucesso.');
+  } catch (err) {
+    console.error('[AdminWeb] editar sistema error:', err.message);
+    return redirectFlash(res, '/painel/sistemas', 'error', 'Erro interno ao atualizar sistema.');
+  }
+});
+
+router.post('/painel/sistemas/:clientId/excluir', requireAdmin, parseForm, async (req, res) => {
+  try {
+    const { rowCount } = await getPool().query('DELETE FROM clients WHERE client_id = $1', [req.params.clientId]);
+    if (rowCount === 0)
+      return redirectFlash(res, '/painel/sistemas', 'error', 'Sistema não encontrado.');
+    return redirectFlash(res, '/painel/sistemas', 'success', 'Sistema excluído permanentemente.');
+  } catch (err) {
+    console.error('[AdminWeb] excluir sistema error:', err.message);
+    return redirectFlash(res, '/painel/sistemas', 'error', 'Erro interno ao excluir sistema.');
   }
 });
 
@@ -312,6 +395,28 @@ router.post('/painel/dominios/:domain/remover', requireAdmin, parseForm, async (
     return redirectFlash(res, '/painel/dominios', 'success', `Domínio ${req.params.domain} removido.`);
   } catch (err) {
     return redirectFlash(res, '/painel/dominios', 'error', 'Erro ao remover domínio.');
+  }
+});
+
+router.post('/painel/dominios/:domain/renomear', requireAdmin, parseForm, async (req, res) => {
+  const { new_domain } = req.body;
+  if (!new_domain || !new_domain.trim())
+    return redirectFlash(res, '/painel/dominios', 'error', 'Novo domínio é obrigatório.');
+
+  const normalized = new_domain.trim().toLowerCase();
+  const old = req.params.domain;
+
+  if (normalized === old)
+    return redirectFlash(res, '/painel/dominios', 'error', 'O novo domínio é igual ao atual.');
+
+  try {
+    const db = getPool();
+    await db.query('INSERT INTO allowed_domains (domain) VALUES ($1) ON CONFLICT DO NOTHING', [normalized]);
+    await db.query('DELETE FROM allowed_domains WHERE domain = $1', [old]);
+    return redirectFlash(res, '/painel/dominios', 'success', `Domínio renomeado de ${old} para ${normalized}.`);
+  } catch (err) {
+    console.error('[AdminWeb] renomear dominio error:', err.message);
+    return redirectFlash(res, '/painel/dominios', 'error', 'Erro interno ao renomear domínio.');
   }
 });
 
