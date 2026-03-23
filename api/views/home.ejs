@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>idCamim — Login Único Camim</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="card" style="max-width:480px;">
+
+      <!-- Logo -->
+      <div class="logo" aria-label="Camim">
+        <svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <text x="0" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="30" font-weight="700" fill="#1a56db">Camim</text>
+        </svg>
+      </div>
+
+      <h1 style="font-size:1.25rem;font-weight:700;text-align:center;color:#111827;margin-bottom:8px;">
+        Crie seu <span style="color:#1a56db;">idCamim</span>
+      </h1>
+      <p class="subtitle" style="margin-bottom:28px;">
+        Acesso único para todos os sistemas Camim.<br />
+        Um login, todos os portais.
+      </p>
+
+      <% if (success) { %>
+        <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:16px 18px;margin-bottom:24px;display:flex;gap:12px;align-items:flex-start;">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;" aria-hidden="true">
+            <circle cx="12" cy="12" r="12" fill="#16a34a"/>
+            <path d="M7 12.5l3.5 3.5 6.5-7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div>
+            <p style="font-weight:600;color:#15803d;margin-bottom:2px;">E-mail enviado!</p>
+            <p style="font-size:0.875rem;color:#166534;">
+              Verifique a caixa de entrada de <strong><%= success %></strong> e clique no link para criar sua senha.
+            </p>
+          </div>
+        </div>
+      <% } %>
+
+      <% if (error) { %>
+        <div class="alert-error">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" style="flex-shrink:0" aria-hidden="true">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          </svg>
+          <span><%= error %></span>
+        </div>
+      <% } %>
+
+      <% if (!success) { %>
+        <form action="/registrar" method="POST" novalidate>
+          <div class="form-group">
+            <label for="email">Seu e-mail corporativo</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              placeholder="voce@camim.com.br"
+              autocomplete="email"
+              autofocus
+              class="form-input"
+              value="<%= email || '' %>"
+            />
+            <p style="font-size:0.8rem;color:#6b7280;margin-top:6px;">
+              Somente e-mails de domínios Camim autorizados são aceitos.
+            </p>
+          </div>
+
+          <button type="submit" class="btn-primary" style="margin-top:4px;">
+            Receber link de criação
+          </button>
+        </form>
+      <% } %>
+
+    </div>
+
+    <footer class="page-footer">
+      <p>Login Único Camim &mdash; Acesso seguro e centralizado</p>
+    </footer>
+  </div>
+</body>
+</html>

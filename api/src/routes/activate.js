@@ -2,12 +2,97 @@
 
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const { getPool } = require('../database');
+const { sendActivationEmail } = require('../services/email');
 
 const router = express.Router();
 
 // Body parser for form submissions
 const parseForm = express.urlencoded({ extended: false });
+
+/**
+ * GET /
+ * Home page — self-registration form.
+ */
+router.get('/', (req, res) => {
+  res.render('home', { error: null, success: null, email: null });
+});
+
+/**
+ * POST /registrar
+ * Self-registration: user enters email, receives activation link.
+ */
+router.post('/registrar', parseForm, async (req, res) => {
+  const renderHome = (error, success, email) =>
+    res.render('home', { error, success, email });
+
+  const email = (req.body.email || '').toLowerCase().trim();
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return renderHome('Informe um endereço de e-mail válido.', null, email);
+  }
+
+  const domain = email.split('@')[1];
+  const db = getPool();
+
+  try {
+    // Check if domain is allowed
+    const domainCheck = await db.query(
+      'SELECT domain FROM allowed_domains WHERE domain = $1',
+      [domain]
+    );
+    if (domainCheck.rows.length === 0) {
+      return renderHome(
+        `O domínio @${domain} não está autorizado a criar um idCamim. Entre em contato com o administrador.`,
+        null,
+        email
+      );
+    }
+
+    // Check if user already exists and is active
+    const existing = await db.query('SELECT id, active FROM users WHERE email = $1', [email]);
+    let userId;
+
+    if (existing.rows.length > 0) {
+      const user = existing.rows[0];
+      if (user.active) {
+        return renderHome(
+          'Este e-mail já possui um idCamim ativo. Acesse normalmente pelos sistemas Camim.',
+          null,
+          email
+        );
+      }
+      // User exists but inactive — resend activation
+      userId = user.id;
+      await db.query('DELETE FROM activation_tokens WHERE user_id = $1', [userId]);
+    } else {
+      // Create new inactive user
+      const result = await db.query(
+        `INSERT INTO users (email, password_hash, active, email_verified)
+         VALUES ($1, $2, FALSE, FALSE) RETURNING id`,
+        [email, await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12)]
+      );
+      userId = result.rows[0].id;
+    }
+
+    // Generate activation token (72h)
+    const token = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000);
+    await db.query(
+      'INSERT INTO activation_tokens (token, user_id, expires_at) VALUES ($1, $2, $3)',
+      [token, userId, expiresAt]
+    );
+
+    const activationUrl = `${process.env.ISSUER}/ativar/${token}`;
+    await sendActivationEmail(email, null, activationUrl);
+
+    return renderHome(null, email, null);
+  } catch (err) {
+    console.error('[Registrar] Error:', err.message);
+    return renderHome('Erro interno. Tente novamente mais tarde.', null, email);
+  }
+});
 
 /**
  * GET /ativar/sucesso
