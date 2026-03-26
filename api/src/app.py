@@ -434,9 +434,9 @@ def r3(): return render_protected_page("kpi_governo.html")
 @app.get('/kpi_home')
 def r4(): return render_protected_page("kpi_home.html")
 
-@app.get('/monitorarrobos')
-def r_monitorarrobos():
-    return render_protected_page("monitorarrobos.html")
+@app.get('/indicadores')
+def r_indicadores():
+    return render_protected_page("indicadores.html")
 
 @app.get('/kpi_prescricao')
 def r5(): return render_protected_page("kpi_prescricao.html")
@@ -650,9 +650,8 @@ def postos_acl_json():
 
 
 # ===============================
-@app.get('/indicadores.html')
-def r_indicadores_html():
-    return redirect('/monitorarrobos.html', code=301)
+@app.get('/kpi_metas_vendas_mensalidades.html')
+def h_kpi_metas(): return render_protected_page('kpi_metas_vendas_mensalidades.html')
 
 # Fallback final para html
 # ===============================
