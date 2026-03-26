@@ -650,6 +650,10 @@ def postos_acl_json():
 
 
 # ===============================
+@app.get('/indicadores.html')
+def r_indicadores_html():
+    return redirect('/monitorarrobos.html', code=301)
+
 # Fallback final para html
 # ===============================
 
