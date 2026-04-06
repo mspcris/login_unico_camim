@@ -162,7 +162,15 @@ function createProvider(jwks) {
   });
 
   provider.on('access_token.saved', (token) => {
-    console.log(`[OIDC] access_token saved: client=${token.clientId}`);
+    console.log(`[OIDC] access_token saved: client=${token.clientId} jti=${token.jti}`);
+  });
+
+  provider.on('access_token.destroyed', (token) => {
+    console.log(`[OIDC] access_token destroyed: jti=${token.jti}`);
+  });
+
+  provider.on('userinfo.token.introspected', (token) => {
+    console.log(`[OIDC] userinfo token introspected: jti=${token.jti}`);
   });
 
   return provider;
