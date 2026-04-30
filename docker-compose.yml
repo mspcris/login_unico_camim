@@ -52,12 +52,6 @@ services:
       ADMIN_API_KEY: ${ADMIN_API_KEY}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@camim.com.br}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-      # Joint venture com meuchatbot — leitura direta do Postgres dele.
-      # Use um usuário com SELECT-only e aponte para o host (mesma VM).
-      # Ex.: postgresql://chatbot_ro:SENHA@host.docker.internal:5432/meuchatbot
-      MEUCHATBOT_DATABASE_URL: ${MEUCHATBOT_DATABASE_URL}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     depends_on:
       postgres:
         condition: service_healthy
