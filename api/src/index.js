@@ -13,6 +13,8 @@ const interactionsRouter = require('./routes/interactions');
 const adminRouter = require('./routes/admin');
 const activateRouter = require('./routes/activate');
 const adminWebRouter = require('./routes/adminWeb');
+const camilaInternaRouter = require('./routes/camilaInterna');
+const camilaInternaDocsRouter = require('./routes/camilaInternaDocs');
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
@@ -76,6 +78,11 @@ async function main() {
 
     // ── 6c. Admin web panel routes ────────────────────────────────────────────
     app.use('/', adminWebRouter);
+
+    // ── 6d. Camila interna (joint venture com meuchatbot — DB read-only) ─────
+    //  Docs PRIMEIRO (sem auth) pra Swagger UI carregar; depois rotas reais (auth).
+    app.use('/camila_interna', camilaInternaDocsRouter);
+    app.use('/camila_interna', camilaInternaRouter);
 
     // ── 7. OIDC interaction routes (login/consent pages) ─────────────────────
     app.use('/interaction', interactionsRouter(provider));
