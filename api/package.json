@@ -11,12 +11,12 @@
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
-    "express": "^4.19.2",
+    "express": "^5.2.1",
     "express-session": "^1.18.0",
     "ioredis": "^5.3.2",
-    "nodemailer": "^6.9.13",
-    "oidc-provider": "^7.14.3",
+    "nodemailer": "^8.0.9",
+    "oidc-provider": "^9.8.5",
     "pg": "^8.11.5",
-    "uuid": "^9.0.0"
+    "uuid": "^14.0.0"
   }
 }
